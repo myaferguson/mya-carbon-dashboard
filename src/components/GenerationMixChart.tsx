@@ -7,7 +7,6 @@ import {
   YAxis,
 } from "recharts";
 import type { Fuel, GenerationSource } from "../types/generationMix";
-import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 type GenerationMixChartProps = {
   sources: GenerationSource[];
