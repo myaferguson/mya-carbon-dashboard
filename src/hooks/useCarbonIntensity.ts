@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { CarbonIntensity } from "../types/carbonIntensity";
 
-interface UseCarbonIntensityResult {
+export type UseCarbonIntensityResult = {
   data: CarbonIntensity | null;
   loading: boolean;
   error: Error | null;

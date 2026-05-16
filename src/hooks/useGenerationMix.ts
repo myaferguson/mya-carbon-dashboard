@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { GenerationMix, GenerationSource } from "../types/generationMix";
 
-type UseGenerationMixResult = {
+export type UseGenerationMixResult = {
     data: GenerationMix | null;
     loading: boolean;
     error: string | null;

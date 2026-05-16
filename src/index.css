@@ -1,1 +1,68 @@
 @import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --bg: #0f172a;
+  --surface: rgba(15, 23, 42, 0.85);
+  --border: #27272a;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --link: #f8fafc;
+  --link-hover: #e4e4e7;
+  --index-very-low-bg: rgba(16, 185, 129, 0.15);
+  --index-very-low-text: #34d399;
+  --index-very-low-border: rgba(16, 185, 129, 0.3);
+
+  --index-low-bg: rgba(163, 230, 53, 0.15);
+  --index-low-text: #bef264;
+  --index-low-border: rgba(163, 230, 53, 0.3);
+
+  --index-moderate-bg: rgba(245, 158, 11, 0.15);
+  --index-moderate-text: #fbbf24;
+  --index-moderate-border: rgba(245, 158, 11, 0.3);
+
+  --index-high-bg: rgba(249, 115, 22, 0.15);
+  --index-high-text: #fb923c;
+  --index-high-border: rgba(249, 115, 22, 0.3);
+
+  --index-very-high-bg: rgba(239, 68, 68, 0.15);
+  --index-very-high-text: #f87171;
+  --index-very-high-border: rgba(239, 68, 68, 0.3);
+}
+
+.theme-light {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --surface: rgba(255, 255, 255, 0.9);
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --link: #0f172a;
+  --link-hover: #334155;
+
+  /* Adjusted colors for light theme */
+  --index-very-low-bg: rgba(16, 185, 129, 0.12);
+  --index-very-low-text: #065f46;
+  --index-very-low-border: rgba(16, 185, 129, 0.25);
+
+  --index-low-bg: rgba(163, 230, 53, 0.12);
+  --index-low-text: #4d7c0f;
+  --index-low-border: rgba(163, 230, 53, 0.25);
+
+  --index-moderate-bg: rgba(245, 158, 11, 0.18);
+  --index-moderate-text: #92400e;
+  --index-moderate-border: rgba(245, 158, 11, 0.35);
+
+  --index-high-bg: rgba(249, 115, 22, 0.12);
+  --index-high-text: #7c2d0a;
+  --index-high-border: rgba(249, 115, 22, 0.28);
+
+  --index-very-high-bg: rgba(239, 68, 68, 0.12);
+  --index-very-high-text: #7f1d1d;
+  --index-very-high-border: rgba(239, 68, 68, 0.28);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
