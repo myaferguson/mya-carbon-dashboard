@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import type { CarbonIntensity } from "../types/carbonIntensity";
+import { formatTimeRange } from "../utils/formatTime";
 
 type CurrentIntensityCardProps = {
   data: CarbonIntensity;
@@ -12,12 +13,15 @@ export function CurrentIntensityCard({
   const isActual = data.actual !== null;
 
   return (
-    <div className="bg-zinc-800/50 border border-zinc-800 rounded-2xl p-8">
+    <div className="bg-zinc-800/50 border border-zinc-800 rounded-2xl p-6 sm:p-8">
       <p className="text-zinc-400 text-sm uppercase tracking-wide">
         Current intensity
       </p>
+      <p className="text-zinc-500 text-xs">
+        {formatTimeRange(data.from, data.to)}
+      </p>
       <p className="mt-2">
-        <span className="text-6xl font-semibold">{value}</span>
+        <span className="text-5xl sm:text-6xl font-semibold">{value}</span>
         <span className="ml-2 text-zinc-400 text-lg">gCO₂/kWh</span>
       </p>
 
