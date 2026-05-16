@@ -5,7 +5,7 @@ export type IntensityIndex =
   | "high"
   | "very high";
 
-export interface CarbonIntensity {
+export type CarbonIntensity = {
   from: string;
   to: string;
   forecast: number;

@@ -1,7 +1,11 @@
+import { CurrentIntensityCard } from "./components/CurrentIntensityCard";
+import { GenerationMixChart } from "./components/GenerationMixChart";
 import { useCarbonIntensity } from "./hooks/useCarbonIntensity";
+import { useGenerationMix } from "./hooks/useGenerationMix";
 
 function App() {
-  const { data, loading, error } = useCarbonIntensity();
+  const intensity = useCarbonIntensity();
+  const generation = useGenerationMix();
 
   return (
     <div className="bg-zinc-900 text-zinc-100 min-h-screen p-8">
@@ -15,22 +19,12 @@ function App() {
       </header>
 
       <main className="max-w-3xl mx-auto">
-        {loading && <p className="text-zinc-400">Loading…</p>}
-        {error && <p className="text-red-400">{error.message}</p>}
-        {data && (
-          <div className="bg-zinc-800/50 border border-zinc-800 rounded-2xl p-8">
-            <p className="text-zinc-400 text-sm uppercase tracking-wide">
-              Current intensity
-            </p>
-            <p className="mt-2">
-              <span className="text-6xl font-semibold">
-                {data.actual ?? data.forecast}
-              </span>
-              <span className="ml-2 text-zinc-400 text-lg">gCO₂/kWh</span>
-            </p>
-            <p className="mt-4 text-zinc-300 capitalize">{data.index}</p>
-          </div>
-        )}
+        {intensity.loading && <p className="text-zinc-400">Loading current intensity…</p>}
+        {intensity.error && <p className="text-red-400">{intensity.error.message}</p>}
+        {intensity.data && <CurrentIntensityCard data={intensity.data} />}
+        {generation.loading && <p className="text-zinc-400 mt-8">Loading generation mix…</p>}
+        {generation.error && <p className="text-red-400 mt-8">{generation.error}</p>}
+        {generation.data && <GenerationMixChart sources={generation.data.sources} />}
       </main>
     </div>
   );
