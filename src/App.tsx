@@ -25,11 +25,14 @@ function App() {
       setTheme(storedTheme);
       return;
     }
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-    } else {
-      setTheme("light");
-    }
+
+    // check if user has system preference for dark mode
+    const prefersDarkTheme: boolean =
+      window &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    setTheme(prefersDarkTheme ? "dark" : "light");
   }, []);
 
   useEffect((): void => {
