@@ -8,7 +8,7 @@ import {
 } from "recharts";
 import type { Fuel, GenerationSource } from "../types/generationMix";
 
-type props = {
+type GenerationMixChartProps = {
   sources: GenerationSource[];
 };
 
@@ -36,7 +36,9 @@ const FUEL_LABELS: Record<Fuel, string> = {
   other: "Other",
 };
 
-export function GenerationMixChart({ sources }: props) {
+export function GenerationMixChart({
+  sources,
+}: GenerationMixChartProps): React.ReactElement {
   function CustomBarShape(props: any) {
     const { x, y, width, height, payload } = props;
     return (

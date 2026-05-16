@@ -10,13 +10,14 @@ import { CurrentIntensityCard } from "./components/CurrentIntensityCard";
 import { GenerationMixChart } from "./components/GenerationMixChart";
 import { useEffect, useState } from "react";
 import type { Theme } from "./types/types";
+import { Field, Label, Switch } from "@headlessui/react";
 
 function App() {
   const [theme, setTheme] = useState<Theme>("dark");
   const intensity: UseCarbonIntensityResult = useCarbonIntensity();
   const generation: UseGenerationMixResult = useGenerationMix();
 
-  useEffect(() => {
+  useEffect((): void => {
     // check if user has local storage preference for theme
     const storedTheme: Theme = localStorage.getItem("theme") as Theme;
 
@@ -31,7 +32,7 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
+  useEffect((): void => {
     document.documentElement.classList.toggle("theme-light", theme === "light");
     localStorage.setItem("theme", theme);
   }, [theme]);
@@ -48,13 +49,32 @@ function App() {
               Real-time carbon emissions from the British electricity grid
             </p>
           </div>
-          <button
-            type="button"
-            className="px-3 py-1 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:text-[var(--link-hover)] transition-colors"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          >
-            {theme === "light" ? "Dark" : "Light"} mode
-          </button>
+          <Field as="div" className="flex items-center gap-2">
+            <Label className="text-sm text-[var(--muted)]">
+              {theme === "light" ? "Light mode" : "Dark mode"}
+            </Label>
+            <Switch
+              checked={theme === "dark"}
+              onChange={(): void =>
+                setTheme(
+                  (prev: Theme): Theme => (prev === "light" ? "dark" : "light"),
+                )
+              }
+              className={({ checked }: { checked: boolean }): string =>
+                `relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                  checked
+                    ? "bg-[var(--switch-track-checked)]"
+                    : "bg-[var(--switch-track)]"
+                }`
+              }
+            >
+              <span
+                className={`${
+                  theme === "dark" ? "translate-x-6" : "translate-x-1"
+                } inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200`}
+              />
+            </Switch>
+          </Field>
         </header>
 
         <main className="space-y-6">

@@ -28,6 +28,10 @@
   --index-very-high-bg: rgba(239, 68, 68, 0.15);
   --index-very-high-text: #f87171;
   --index-very-high-border: rgba(239, 68, 68, 0.3);
+
+  --switch-track: rgba(148, 163, 184, 0.18);
+  --switch-track-checked: #6366f1;
+  --switch-thumb: #ffffff;
 }
 
 .theme-light {
@@ -60,6 +64,9 @@
   --index-very-high-bg: rgba(239, 68, 68, 0.12);
   --index-very-high-text: #7f1d1d;
   --index-very-high-border: rgba(239, 68, 68, 0.28);
+
+  --switch-track: rgba(148, 163, 184, 0.3);
+  --switch-track-checked: #4f46e5;
 }
 
 body {

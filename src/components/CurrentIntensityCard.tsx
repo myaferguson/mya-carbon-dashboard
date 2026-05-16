@@ -1,4 +1,3 @@
-import type { ReactElement } from "react";
 import type { CarbonIntensity } from "../types/carbonIntensity";
 import { formatTimeRange } from "../utils/formatTime";
 
@@ -8,9 +7,9 @@ type CurrentIntensityCardProps = {
 
 export function CurrentIntensityCard({
   data,
-}: CurrentIntensityCardProps): ReactElement {
-  const value = data.actual ?? data.forecast;
-  const isActual = data.actual !== null;
+}: CurrentIntensityCardProps): React.ReactElement {
+  const value: number = data.actual ?? data.forecast;
+  const isActual: boolean = data.actual !== null;
 
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 sm:p-8">
@@ -35,7 +34,11 @@ export function CurrentIntensityCard({
   );
 }
 
-function IndexBadge({ index }: { index: CarbonIntensity["index"] }) {
+function IndexBadge({
+  index,
+}: {
+  index: CarbonIntensity["index"];
+}): React.ReactElement {
   const colors: Record<CarbonIntensity["index"], string> = {
     "very low":
       "bg-[var(--index-very-low-bg)] text-[var(--index-very-low-text)] border-[var(--index-very-low-border)]",
