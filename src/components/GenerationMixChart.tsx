@@ -7,6 +7,7 @@ import {
   YAxis,
 } from "recharts";
 import type { Fuel, GenerationSource } from "../types/generationMix";
+import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 type GenerationMixChartProps = {
   sources: GenerationSource[];
@@ -98,7 +99,9 @@ export function GenerationMixChart({
               borderRadius: 8,
               color: "var(--text)",
             }}
-            formatter={(value) => [
+            labelStyle={{ color: "var(--text)" }}
+            itemStyle={{ color: "var(--text)" }}
+            formatter={(value): [string, string] => [
               `${Number(value ?? 0).toFixed(1)}%`,
               "Share",
             ]}
