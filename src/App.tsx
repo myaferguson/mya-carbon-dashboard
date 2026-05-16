@@ -1,29 +1,37 @@
-import { useState, useEffect } from "react";
+import { useCarbonIntensity } from "./hooks/useCarbonIntensity";
 
 function App() {
-  const [intensity, setIntensity] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("https://api.carbonintensity.org.uk/intensity")
-      .then((response) => response.json())
-      .then((data) => {
-        const value = data.data[0].intensity.actual;
-        setIntensity(value);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch:", error);
-        setError("Could not load data. Please try again later.");
-        setLoading(false);
-      });
-  }, []);
+  const { data, loading, error } = useCarbonIntensity();
 
   return (
-    <div>
-      <h1>UK Carbon Intensity</h1>
-      {loading ? <p>Loading...</p> : error ? <p>{error}</p> : <p>{intensity} gCO₂/kWh</p>}
+    <div className="bg-zinc-900 text-zinc-100 min-h-screen p-8">
+      <header className="max-w-3xl mx-auto mb-8">
+        <h1 className="text-3xl font-semibold tracking-tight">
+          UK Carbon Intensity
+        </h1>
+        <p className="text-zinc-400 text-sm mt-1">
+          Real-time carbon emissions from the British electricity grid
+        </p>
+      </header>
+
+      <main className="max-w-3xl mx-auto">
+        {loading && <p className="text-zinc-400">Loading…</p>}
+        {error && <p className="text-red-400">{error.message}</p>}
+        {data && (
+          <div className="bg-zinc-800/50 border border-zinc-800 rounded-2xl p-8">
+            <p className="text-zinc-400 text-sm uppercase tracking-wide">
+              Current intensity
+            </p>
+            <p className="mt-2">
+              <span className="text-6xl font-semibold">
+                {data.actual ?? data.forecast}
+              </span>
+              <span className="ml-2 text-zinc-400 text-lg">gCO₂/kWh</span>
+            </p>
+            <p className="mt-4 text-zinc-300 capitalize">{data.index}</p>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
