@@ -4,6 +4,12 @@ import {
   type UseCarbonIntensityResult,
 } from "../hooks/useCarbonIntensity";
 import { TeaCupCard } from "../components/TeaCupCard";
+import {
+  useDailyIntensity,
+  type UseDailyIntensityResult,
+} from "../hooks/useDailyIntensity";
+import { OptimalBrewCard } from "../components/OptimalBrewCard";
+import React from "react";
 
 type HeroConfig = {
   emoji: string;
@@ -62,6 +68,7 @@ const HERO_CONFIG: Record<IntensityIndex, HeroConfig> = {
 export function TeaPage() {
   const { data, loading, error }: UseCarbonIntensityResult =
     useCarbonIntensity();
+  const dailyIntensity: UseDailyIntensityResult = useDailyIntensity();
 
   return (
     <>
@@ -77,8 +84,19 @@ export function TeaPage() {
       <main className="space-y-6">
         {loading && <p className="text-[var(--muted)]">Checking the grid…</p>}
         {error && <p className="text-red-400">{error}</p>}
-        {data && <HeroCard index={data.index} />}
-        {data && <TeaCupCard data={data} />}
+        {data && (
+          <React.Fragment>
+            <HeroCard index={data.index} />
+            <TeaCupCard data={data} />
+
+            {dailyIntensity.data && (
+              <OptimalBrewCard
+                periods={dailyIntensity.data}
+                currentIntensity={data.actual ?? data.forecast}
+              />
+            )}
+          </React.Fragment>
+        )}
       </main>
     </>
   );
