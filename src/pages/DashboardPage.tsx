@@ -9,10 +9,16 @@ import {
 import { CurrentIntensityCard } from "../components/CurrentIntensityCard";
 import { GenerationMixChart } from "../components/GenerationMixChart";
 import React from "react";
+import {
+  useDailyIntensity,
+  type UseDailyIntensityResult,
+} from "../hooks/useDailyIntensity";
+import { DailyTrendChart } from "../components/DailyTrendChart";
 
 export function DashboardPage() {
   const intensity: UseCarbonIntensityResult = useCarbonIntensity();
   const generation: UseGenerationMixResult = useGenerationMix();
+  const dailyIntensity: UseDailyIntensityResult = useDailyIntensity();
 
   return (
     <React.Fragment>
@@ -35,6 +41,16 @@ export function DashboardPage() {
           <p className="text-red-400">{intensity.error.message}</p>
         )}
         {intensity.data && <CurrentIntensityCard data={intensity.data} />}
+
+        {dailyIntensity.loading && (
+          <p className="text-[var(--muted)]">Loading trend data…</p>
+        )}
+        {dailyIntensity.error && (
+          <p className="text-red-400">{dailyIntensity.error}</p>
+        )}
+        {dailyIntensity.data && (
+          <DailyTrendChart periods={dailyIntensity.data} />
+        )}
 
         {generation.loading && (
           <p className="text-zinc-400">Loading generation mix…</p>
