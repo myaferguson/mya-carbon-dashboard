@@ -4,13 +4,13 @@ import type { CarbonIntensity } from "../types/carbonIntensity";
 export type UseCarbonIntensityResult = {
   data: CarbonIntensity | null;
   loading: boolean;
-  error: Error | null;
+  error: string | null;
 }
 
 export function useCarbonIntensity(): UseCarbonIntensityResult {
   const [data, setData] = useState<CarbonIntensity | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -40,7 +40,7 @@ export function useCarbonIntensity(): UseCarbonIntensityResult {
       } catch (err) {
         if (cancelled) return;
         console.error("Failed to fetch carbon intensity:", err);
-        setError(err as Error);
+        setError((err as Error).message);
       } finally {
         if (!cancelled) {
           setLoading(false);

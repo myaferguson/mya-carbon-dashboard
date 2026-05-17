@@ -37,9 +37,7 @@ export function DashboardPage() {
         {intensity.loading && (
           <p className="text-zinc-400">Loading current intensity…</p>
         )}
-        {intensity.error && (
-          <p className="text-red-400">{intensity.error.message}</p>
-        )}
+        {intensity.error && <p className="text-red-400">{intensity.error}</p>}
         {intensity.data && <CurrentIntensityCard data={intensity.data} />}
 
         {dailyIntensity.loading && (
