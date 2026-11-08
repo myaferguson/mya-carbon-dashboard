@@ -29,6 +29,9 @@
   --index-very-high-text: #f87171;
   --index-very-high-border: rgba(239, 68, 68, 0.3);
 
+  /* Positive figures such as CO₂ saved. */
+  --good: #4ade80;
+
   --switch-track: rgba(148, 163, 184, 0.18);
   --switch-track-checked: #6366f1;
   --switch-thumb: #ffffff;
@@ -65,6 +68,8 @@
   --index-very-high-text: #7f1d1d;
   --index-very-high-border: rgba(239, 68, 68, 0.28);
 
+  --good: #15803d;
+
   --switch-track: rgba(148, 163, 184, 0.3);
   --switch-track-checked: #4f46e5;
 }
@@ -72,4 +77,23 @@
 body {
   background: var(--bg);
   color: var(--text);
+}
+
+/* A clear, consistent focus ring for keyboard users on every control. */
+:focus-visible {
+  outline: 2px solid var(--switch-track-checked);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respect people who've asked their system for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

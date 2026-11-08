@@ -5,11 +5,14 @@ import {
 } from "../hooks/useCarbonIntensity";
 import { TeaCupCard } from "../components/TeaCupCard";
 import {
-  useDailyIntensity,
-  type UseDailyIntensityResult,
-} from "../hooks/useDailyIntensity";
+  useIntensityForecast,
+  type UseIntensityForecastResult,
+} from "../hooks/useIntensityForecast";
 import { OptimalBrewCard } from "../components/OptimalBrewCard";
+import { CardSkeleton } from "../components/CardSkeleton";
+import { ErrorCard } from "../components/ErrorCard";
 import React from "react";
+import { Link } from "react-router-dom";
 
 type HeroConfig = {
   emoji: string;
@@ -66,38 +69,56 @@ const HERO_CONFIG: Record<IntensityIndex, HeroConfig> = {
 };
 
 export function TeaPage() {
-  const { data, loading, error }: UseCarbonIntensityResult =
+  const { data, loading, error, refetch }: UseCarbonIntensityResult =
     useCarbonIntensity();
-  const dailyIntensity: UseDailyIntensityResult = useDailyIntensity();
+  const forecast: UseIntensityForecastResult = useIntensityForecast();
 
   return (
     <>
-      <header className="mb-8 sm:mb-10">
+      <div className="mb-8 sm:mb-10">
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
           Tea optimiser
         </h1>
         <p className="text-[var(--muted)] text-sm mt-1">
           Should you boil the kettle right now?
         </p>
-      </header>
+      </div>
 
-      <main className="space-y-6">
-        {loading && <p className="text-[var(--muted)]">Checking the grid…</p>}
-        {error && <p className="text-red-400">{error}</p>}
+      <div className="space-y-6">
+        {loading && <CardSkeleton label="Checking the grid" bodyHeight="h-32" />}
+        {error && <ErrorCard message={error} onRetry={refetch} />}
         {data && (
           <React.Fragment>
             <HeroCard index={data.index} />
             <TeaCupCard data={data} />
 
-            {dailyIntensity.data && (
+            {forecast.loading && (
+              <CardSkeleton
+                label="Finding the best time to brew"
+                bodyHeight="h-24"
+              />
+            )}
+            {forecast.error && (
+              <ErrorCard message={forecast.error} onRetry={forecast.refetch} />
+            )}
+            {forecast.data && (
               <OptimalBrewCard
-                periods={dailyIntensity.data}
+                periods={forecast.data}
                 currentIntensity={data.actual ?? data.forecast}
               />
             )}
+            <p className="text-sm text-[var(--muted)]">
+              Planning a bigger load?{" "}
+              <Link
+                to="/planner"
+                className="text-[var(--text)] underline underline-offset-2"
+              >
+                Try the appliance planner →
+              </Link>
+            </p>
           </React.Fragment>
         )}
-      </main>
+      </div>
     </>
   );
 }
@@ -120,7 +141,7 @@ function HeroCard({ index }: { index: IntensityIndex }) {
       >
         {cardConfig.title}
       </h2>
-      <p style={{ color: cardConfig.text, opacity: 0.8 }}>
+      <p style={{ color: cardConfig.text }}>
         {cardConfig.subtitle}
       </p>
     </div>

@@ -1,5 +1,7 @@
 import type { CarbonIntensity } from "../types/carbonIntensity";
 import { formatTimeRange } from "../utils/formatTime";
+import { IndexBadge } from "./IndexBadge";
+import { LevelsExplainer, UnitExplainer } from "./IntensityExplainers";
 
 type CurrentIntensityCardProps = {
   data: CarbonIntensity;
@@ -21,40 +23,17 @@ export function CurrentIntensityCard({
       </p>
       <p className="mt-2">
         <span className="text-5xl sm:text-6xl font-semibold">{value}</span>
-        <span className="ml-2 text-[var(--muted)] text-lg">gCO₂/kWh</span>
+        <span className="ml-2 text-[var(--muted)] text-lg">gCO₂/kWh</span>{" "}
+        <UnitExplainer />
       </p>
 
       <div className="mt-6 flex items-center gap-3">
         <IndexBadge index={data.index} />
+        <LevelsExplainer />
         <span className="text-[var(--muted)] text-sm">
           {isActual ? "Actual" : "Forecast only"}
         </span>
       </div>
     </div>
-  );
-}
-
-function IndexBadge({
-  index,
-}: {
-  index: CarbonIntensity["index"];
-}): React.ReactElement {
-  const colors: Record<CarbonIntensity["index"], string> = {
-    "very low":
-      "bg-[var(--index-very-low-bg)] text-[var(--index-very-low-text)] border-[var(--index-very-low-border)]",
-    low: "bg-[var(--index-low-bg)] text-[var(--index-low-text)] border-[var(--index-low-border)]",
-    moderate:
-      "bg-[var(--index-moderate-bg)] text-[var(--index-moderate-text)] border-[var(--index-moderate-border)]",
-    high: "bg-[var(--index-high-bg)] text-[var(--index-high-text)] border-[var(--index-high-border)]",
-    "very high":
-      "bg-[var(--index-very-high-bg)] text-[var(--index-very-high-text)] border-[var(--index-very-high-border)]",
-  };
-
-  return (
-    <span
-      className={`index-badge ${index.replace(" ", "-")} px-2.5 py-1 rounded-full text-xs font-medium capitalize border ${colors[index]}`}
-    >
-      {index}
-    </span>
   );
 }

@@ -1,54 +1,59 @@
 import type { HalfHourPeriod } from "../types/dailyIntensity";
+import {
+  dayLabel,
+  formatClock,
+  formatClockWithDay,
+} from "../utils/formatTime";
+import {
+  co2PerCup,
+  findBestWindow,
+  type BestWindow,
+} from "../utils/planner";
+
+import { useNow } from "../hooks/useNow";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 type OptimalBrewCardProps = {
   periods: HalfHourPeriod[];
   currentIntensity: number;
 };
 
-const KWH_PER_CUP: number = 0.075;
-
-function formatTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
+export function OptimalBrewCard({
+  periods,
+  currentIntensity,
+}: OptimalBrewCardProps) {
+  const now: Date = useNow();
+  const best: BestWindow | null = findBestWindow(periods, 1, {
+    now,
+    deadline: new Date(now.getTime() + DAY_MS),
   });
-}
 
-/**
- * Finds the half-hour period with the lowest carbon intensity.
- * Prefers actual values over forecasts when available.
- * @param periods - Array of half-hour periods to search
- * @returns The period with the cleanest (lowest) carbon intensity
- */
-function findCleanestPeriod(periods: HalfHourPeriod[]): HalfHourPeriod {
-  return periods.reduce(
-    (best: HalfHourPeriod, current: HalfHourPeriod): HalfHourPeriod => {
-      const bestValue = best.actual ?? best.forecast;
-      const currentValue = current.actual ?? current.forecast;
-      return currentValue < bestValue ? current : best;
-    },
-  );
-}
+  // No forecast data ahead to compare against.
+  if (!best) return null;
 
-export function OptimalBrewCard({ periods, currentIntensity }: OptimalBrewCardProps) {
-  const cleanestPeriod: HalfHourPeriod = findCleanestPeriod(periods);
-  const cleanestIntensity: number = cleanestPeriod.actual ?? cleanestPeriod.forecast;
-  const co2Now: number = currentIntensity * KWH_PER_CUP;
-  const co2Optimal: number = cleanestIntensity * KWH_PER_CUP;
+  const cleanestPeriod: HalfHourPeriod = best.periods[0];
+  const isNow: boolean = new Date(cleanestPeriod.from) <= now;
+  const cleanestIntensity: number = best.avgIntensity;
+  const co2Now: number = co2PerCup(currentIntensity);
+  const co2Optimal: number = co2PerCup(cleanestIntensity);
   const saving: number = co2Now - co2Optimal;
 
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 sm:p-8">
       <p className="text-[var(--muted)] text-sm uppercase tracking-wide">
-        Best time to brew today
+        Best time to brew (next 24h)
       </p>
 
       <p className="mt-3">
         <span className="text-4xl sm:text-5xl font-semibold">
-          {formatTime(cleanestPeriod.from)}
+          {isNow ? "Right now" : formatClock(cleanestPeriod.from)}
         </span>
         <span className="ml-2 text-[var(--muted)] text-lg">
-          - {formatTime(cleanestPeriod.to)}
+          {isNow ? "until" : "-"} {formatClock(cleanestPeriod.to)}
+          {!isNow && dayLabel(cleanestPeriod.from, now) && (
+            <> {dayLabel(cleanestPeriod.from, now)}</>
+          )}
         </span>
       </p>
 
@@ -63,18 +68,20 @@ export function OptimalBrewCard({ periods, currentIntensity }: OptimalBrewCardPr
             {co2Now.toFixed(1)}g CO₂
           </span>
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-[var(--muted)]">
-            A cup at {formatTime(cleanestPeriod.from)}
-          </span>
-          <span className="font-medium" style={{ color: "#4ade80" }}>
-            {co2Optimal.toFixed(1)}g CO₂
-          </span>
-        </div>
-        {saving > 0 && (
+        {!isNow && (
+          <div className="flex justify-between text-sm">
+            <span className="text-[var(--muted)]">
+              A cup at {formatClockWithDay(cleanestPeriod.from, now)}
+            </span>
+            <span className="font-medium" style={{ color: "var(--good)" }}>
+              {co2Optimal.toFixed(1)}g CO₂
+            </span>
+          </div>
+        )}
+        {!isNow && saving > 0 && (
           <div className="flex justify-between text-sm pt-2 border-t border-[var(--border)]">
             <span className="text-[var(--muted)]">You'd save</span>
-            <span className="font-medium" style={{ color: "#86efac" }}>
+            <span className="font-medium" style={{ color: "var(--good)" }}>
               {saving.toFixed(1)}g per cup
             </span>
           </div>

@@ -1,14 +1,13 @@
 import type { CarbonIntensity } from "../types/carbonIntensity";
+import { co2PerCup as calcCo2PerCup, KWH_PER_CUP } from "../utils/planner";
 
 interface Props {
   data: CarbonIntensity;
 }
 
-const KWH_PER_CUP: number = 0.075;
-
 export function TeaCupCard({ data }: Props) {
   const intensity: number = data.actual ?? data.forecast;
-  const co2PerCup: number = intensity * KWH_PER_CUP;
+  const co2PerCup: number = calcCo2PerCup(intensity);
   const phoneCharges: number = co2PerCup / 8.22;
 
   return (

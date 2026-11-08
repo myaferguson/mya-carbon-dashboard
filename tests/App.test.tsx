@@ -29,9 +29,26 @@ vi.mock("../src/hooks/useGenerationMix", () => {
   };
 });
 
+vi.mock("../src/hooks/useIntensityForecast", () => {
+  return {
+    useIntensityForecast: () => ({
+      loading: false,
+      error: null,
+      data: [],
+    }),
+  };
+});
+
+vi.mock("../src/hooks/useRegions", () => {
+  return {
+    useRegions: () => ({ loading: false, error: null, data: null }),
+  };
+});
+
 describe("App", () => {
-  it("renders the app header", () => {
+  it("renders the app header", async () => {
     render(<App />);
-    expect(screen.getByText("UK Carbon Intensity")).toBeInTheDocument();
+    // Pages load lazily, so wait for the dashboard to arrive.
+    expect(await screen.findByText("UK Carbon Intensity")).toBeInTheDocument();
   });
 });
