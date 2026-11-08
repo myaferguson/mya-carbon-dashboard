@@ -2,9 +2,11 @@ import type { RegionSnapshot } from "../types/regional";
 import type { AllRegions } from "../utils/regional";
 import { useLocationContext } from "../context/locationContext";
 import { PostcodeForm } from "./PostcodeForm";
+import { Card } from "./Card";
 
 type RegionComparisonCardProps = {
   regions: AllRegions;
+  className?: string;
 };
 
 const indexVar = (r: RegionSnapshot, part: "text" | "bg"): string =>
@@ -19,7 +21,7 @@ function compareWithGb(value: number, gb: number): string {
     : `${diff}% dirtier than the GB average`;
 }
 
-export function RegionComparisonCard({ regions }: RegionComparisonCardProps) {
+export function RegionComparisonCard({ regions, className = "" }: RegionComparisonCardProps) {
   const { outcode, setOutcode, region, regionError } = useLocationContext();
   const { local, gb } = regions;
   // The list is sorted cleanest first.
@@ -31,26 +33,16 @@ export function RegionComparisonCard({ regions }: RegionComparisonCardProps) {
   const yours = region ? local.find((r) => r.id === region.id) : undefined;
 
   return (
-    <section
-      aria-labelledby="regions-heading"
-      className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 sm:p-8"
-    >
-      <h2
-        id="regions-heading"
-        className="text-[var(--muted)] text-sm uppercase tracking-wide"
-      >
-        Across the UK right now
-      </h2>
-
+    <Card id="regions" title="Across the UK right now" className={className}>
       {yours && gb ? (
-        <p className="mt-2 text-[var(--text)]">
+        <p className="text-sm">
           <span className="font-semibold">{yours.name}</span> is at{" "}
           <span className="font-semibold">{yours.forecast} gCO₂/kWh</span>,{" "}
           {compareWithGb(yours.forecast, gb.forecast)} ({gb.forecast}).
         </p>
       ) : (
-        <div className="mt-2 space-y-4">
-          <p className="text-[var(--text)]">
+        <div className="space-y-3">
+          <p className="text-sm">
             {outcode && regionError
               ? `We couldn't find ${outcode}. Try another postcode.`
               : outcode
@@ -67,14 +59,18 @@ export function RegionComparisonCard({ regions }: RegionComparisonCardProps) {
         </div>
       )}
 
-      <ol className="mt-6 space-y-1.5" aria-label="Regions, cleanest first">
+      {/* Two columns on wide screens, read top to bottom. */}
+      <ol
+        className="mt-3 space-y-0.5 lg:grid lg:grid-flow-col lg:grid-rows-7 lg:gap-x-6 lg:space-y-0"
+        aria-label="Regions, cleanest first"
+      >
         {local.map((r) => {
           const isYours = r.id === yours?.id;
           return (
             <li
               key={r.id}
               aria-current={isYours ? "true" : undefined}
-              className={`grid grid-cols-[9rem_1fr_3rem] sm:grid-cols-[12rem_1fr_3.5rem] items-center gap-3 rounded-md px-2 py-1 text-sm ${
+              className={`grid grid-cols-[8.5rem_1fr_2.25rem] items-center gap-2 rounded-md px-2 py-0.5 text-sm ${
                 isYours ? "ring-1 ring-[var(--text)] font-semibold" : ""
               }`}
             >
@@ -102,9 +98,9 @@ export function RegionComparisonCard({ regions }: RegionComparisonCardProps) {
           );
         })}
       </ol>
-      <p className="mt-3 text-xs text-[var(--muted)]">
+      <p className="mt-2 text-xs text-[var(--muted)]">
         gCO₂/kWh forecast for this half hour. Colours show the intensity level.
       </p>
-    </section>
+    </Card>
   );
 }

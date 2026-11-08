@@ -9,6 +9,8 @@ export type ApplianceId =
 export type AppliancePreset = {
   id: ApplianceId;
   label: string;
+  /** Fits on a compact chip. */
+  shortLabel: string;
   icon: string;
   /** Rough energy use for one run, in kWh (ignored for ev/custom). */
   kwh: number;
@@ -19,12 +21,12 @@ export type AppliancePreset = {
 
 /** Typical figures for a UK household. They're estimates, and the UI says so. */
 export const APPLIANCES: AppliancePreset[] = [
-  { id: "kettle", label: "Kettle", icon: "☕", kwh: 0.075, slots: 1, description: "One cup" },
-  { id: "washing-machine", label: "Washing machine", icon: "🧺", kwh: 1.0, slots: 4, description: "≈1 kWh over 2h" },
-  { id: "dishwasher", label: "Dishwasher", icon: "🍽️", kwh: 1.2, slots: 4, description: "≈1.2 kWh over 2h" },
-  { id: "tumble-dryer", label: "Tumble dryer", icon: "🌀", kwh: 2.5, slots: 3, description: "≈2.5 kWh over 1.5h" },
-  { id: "ev", label: "EV charge", icon: "🚗", kwh: 0, slots: 0, description: "7 kW home charger" },
-  { id: "custom", label: "Something else", icon: "🔌", kwh: 0, slots: 0, description: "Enter your own" },
+  { id: "kettle", label: "Kettle", shortLabel: "Kettle", icon: "☕", kwh: 0.075, slots: 1, description: "One cup" },
+  { id: "washing-machine", label: "Washing machine", shortLabel: "Washer", icon: "🧺", kwh: 1.0, slots: 4, description: "≈1 kWh over 2h" },
+  { id: "dishwasher", label: "Dishwasher", shortLabel: "Dishes", icon: "🍽️", kwh: 1.2, slots: 4, description: "≈1.2 kWh over 2h" },
+  { id: "tumble-dryer", label: "Tumble dryer", shortLabel: "Dryer", icon: "🌀", kwh: 2.5, slots: 3, description: "≈2.5 kWh over 1.5h" },
+  { id: "ev", label: "EV charge", shortLabel: "EV", icon: "🚗", kwh: 0, slots: 0, description: "7 kW home charger" },
+  { id: "custom", label: "Something else", shortLabel: "Other", icon: "🔌", kwh: 0, slots: 0, description: "Enter your own" },
 ];
 
 export const EV_CHARGER_KW = 7;

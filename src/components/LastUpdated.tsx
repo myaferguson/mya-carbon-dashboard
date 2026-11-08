@@ -18,7 +18,7 @@ export function LastUpdated() {
   );
 
   return (
-    <span className="ml-auto flex items-center gap-2 text-xs text-[var(--muted)]">
+    <span className="flex items-center gap-2 text-xs text-[var(--muted)]">
       <span aria-live="polite" data-testid="last-updated">
         {fetching > 0
           ? "Updating…"

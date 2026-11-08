@@ -1,7 +1,6 @@
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { useLocationContext } from "../context/locationContext";
 import { PostcodeForm } from "./PostcodeForm";
-import { LastUpdated } from "./LastUpdated";
 
 export function LocationBar() {
   const { outcode, setOutcode, region, regionLoading, regionError } =
@@ -13,9 +12,9 @@ export function LocationBar() {
   else if (outcode && regionError) place = `${outcode} · area not found`;
 
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-3 text-sm">
+    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
       <span aria-hidden="true">📍</span>
-      <span className="text-[var(--muted)]">Showing</span>
+      <span className="sr-only">Showing</span>
       <span className="font-medium" data-testid="location-name">
         {place}
       </span>
@@ -53,7 +52,6 @@ export function LocationBar() {
           )}
         </PopoverPanel>
       </Popover>
-      <LastUpdated />
     </div>
   );
 }

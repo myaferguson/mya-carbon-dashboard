@@ -9,9 +9,15 @@ test("summarises the grid and when it will be cleaner", async ({ page }) => {
   await page.goto("/");
 
   const summary = page.getByRole("region", { name: "Summary" });
-  await expect(summary).toContainText("high right now · 248 gCO₂/kWh");
+  await expect(summary).toContainText("high right now");
   // 248 now vs 80 at 02:00: 68% cleaner.
   await expect(summary).toContainText("It'll be 68% cleaner at 02:00 tomorrow");
+
+  const nowTile = page.getByRole("region", { name: /^Now/ });
+  await expect(nowTile).toContainText("248");
+  await expect(page.getByRole("region", { name: "Cleanest in the next 24h" })).toContainText(
+    "02:00",
+  );
 
   await expect(page.getByText("Last 24h & next 24h")).toBeVisible();
   await expect(

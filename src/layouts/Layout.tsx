@@ -1,8 +1,9 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { Suspense, useEffect, useState } from "react";
 import { Field, Label, Switch } from "@headlessui/react";
 import type { Theme } from "../types/types";
 import { LocationBar } from "../components/LocationBar";
+import { LastUpdated } from "../components/LastUpdated";
 import { CardSkeleton } from "../components/CardSkeleton";
 
 /** Saved theme if there is a valid one, otherwise the system preference. */
@@ -29,25 +30,27 @@ export function Layout() {
 
   return (
     <div className="bg-[var(--bg)] text-[var(--text)] min-h-screen transition-colors duration-200">
-      <div className="max-w-3xl mx-auto px-4 sm:px-8 min-h-screen flex flex-col">
+      <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 sm:px-6">
         <a
           href="#content"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[var(--text)] focus:px-3 focus:py-2 focus:text-[var(--bg)]"
         >
           Skip to content
         </a>
-        <header>
-          <div className="flex items-center justify-between pt-4">
-            <nav className="flex gap-1">
-              <TabLink to="/" label="Dashboard" />
-              <TabLink to="/planner" label="Planner" />
-              <TabLink to="/tea" label="Tea optimiser" />
-            </nav>
-
+        <header className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-[var(--border)] py-3">
+          <div className="mr-auto">
+            <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
+              <Link to="/">UK Carbon Intensity</Link>
+            </h1>
+            <p className="text-xs text-[var(--muted)]">
+              Live and forecast CO₂ from the British grid
+            </p>
+          </div>
+          <LocationBar />
+          <div className="flex items-center gap-4">
+            <LastUpdated />
             <Field as="div" className="flex items-center gap-2">
-              <Label className="sr-only sm:not-sr-only text-sm text-[var(--muted)]">
-                {theme === "light" ? "Light mode" : "Dark mode"}
-              </Label>
+              <Label className="sr-only">Dark mode</Label>
               <Switch
                 checked={theme === "dark"}
                 onChange={(): void =>
@@ -71,18 +74,13 @@ export function Layout() {
               </Switch>
             </Field>
           </div>
-          <div className="border-b border-[var(--border)] mt-2" />
-          <LocationBar />
         </header>
-        {/* flex 1 allows the main content area to grow and fill the available
-        vertical space, pushing the footer to the bottom of the page. */}
-        <main className="py-8 sm:py-10 flex-1" id="content" tabIndex={-1}>
-          {/* render the matched child route component */}
-          <Suspense fallback={<CardSkeleton label="Loading page" bodyHeight="h-48" />}>
+        <main className="flex-1 py-4 sm:py-5" id="content" tabIndex={-1}>
+          <Suspense fallback={<CardSkeleton label="Loading" bodyHeight="h-48" />}>
             <Outlet />
           </Suspense>
         </main>
-        <footer className="pb-10 text-[var(--muted)] text-sm">
+        <footer className="pb-6 text-xs text-[var(--muted)]">
           Data from{" "}
           <a
             href="https://carbonintensity.org.uk"
@@ -92,26 +90,9 @@ export function Layout() {
           >
             National Grid ESO Carbon Intensity API
           </a>
+          . Times shown in your local time.
         </footer>
       </div>
     </div>
-  );
-}
-
-function TabLink({ to, label }: { to: string; label: string }) {
-  return (
-    <NavLink
-      to={to}
-      end
-      className={({ isActive }: { isActive: boolean }) =>
-        `px-3 sm:px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
-          isActive
-            ? "text-[var(--text)] border-b-2 border-[var(--text)] -mb-px"
-            : "text-[var(--muted)] hover:text-[var(--text)]"
-        }`
-      }
-    >
-      {label}
-    </NavLink>
   );
 }

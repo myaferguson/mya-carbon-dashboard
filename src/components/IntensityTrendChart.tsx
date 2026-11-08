@@ -29,6 +29,9 @@ import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 
 type IntensityTrendChartProps = {
   periods: HalfHourPeriod[];
+  /** A window to outline on the chart, e.g. the planner's recommendation. */
+  highlight?: { start: string; end: string; label: string } | null;
+  className?: string;
 };
 
 const time = (iso: string): number => new Date(iso).getTime();
@@ -54,7 +57,11 @@ function downloadCsv(periods: HalfHourPeriod[]): void {
   URL.revokeObjectURL(url);
 }
 
-export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
+export function IntensityTrendChart({
+  periods,
+  highlight = null,
+  className = "",
+}: IntensityTrendChartProps) {
   const chartRef = React.useRef<HTMLDivElement>(null);
   const nowDate: Date = useNow();
   const now: number = nowDate.getTime();
@@ -98,12 +105,18 @@ export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
   }
 
   return (
-    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 sm:p-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between mb-6">
+    <section
+      aria-labelledby="trend-heading"
+      className={`flex flex-col rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 ${className}`}
+    >
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-[var(--muted)] text-sm uppercase tracking-wide">
+          <h2
+            id="trend-heading"
+            className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]"
+          >
             {hasActuals ? "Last 24h & next 24h" : "Next 48h"}
-          </p>
+          </h2>
           <p className="text-[var(--muted)] text-xs mt-1">
             {hasActuals
               ? "Actual intensity so far, forecast from now on."
@@ -148,8 +161,13 @@ export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
         </div>
       </div>
 
-      <div ref={chartRef} role="img" aria-label={describeTrend(periods, nowDate)}>
-        <ResponsiveContainer width="100%" height={280}>
+      <div
+        ref={chartRef}
+        role="img"
+        aria-label={describeTrend(periods, nowDate)}
+        className="h-64 min-h-64 lg:h-auto lg:flex-1"
+      >
+        <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={data}
             margin={{ top: 16, right: 8, bottom: 4, left: 0 }}
@@ -204,6 +222,24 @@ export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
                 name === "actual" ? "Actual" : "Forecast",
               ]}
             />
+            {highlight && (
+              <ReferenceArea
+                x1={time(highlight.start)}
+                x2={time(highlight.end)}
+                fill="var(--text)"
+                fillOpacity={0.08}
+                stroke="var(--text)"
+                strokeWidth={1.5}
+                strokeDasharray="4 3"
+                ifOverflow="hidden"
+                label={{
+                  value: highlight.label,
+                  position: "insideTop",
+                  fill: "var(--text)",
+                  fontSize: 11,
+                }}
+              />
+            )}
             <ReferenceLine
               x={now}
               stroke="var(--text)"
@@ -243,7 +279,7 @@ export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
         aria-expanded={showTable}
         aria-controls={tableId}
         onClick={() => setShowTable((v) => !v)}
-        className="mt-4 text-sm text-[var(--muted)] underline underline-offset-2 hover:text-[var(--text)]"
+        className="mt-2 self-start text-xs text-[var(--muted)] underline underline-offset-2 hover:text-[var(--text)]"
       >
         {showTable ? "Hide table" : "View as table"}
       </button>
@@ -283,6 +319,6 @@ export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
           </table>
         </div>
       )}
-    </div>
+    </section>
   );
 }

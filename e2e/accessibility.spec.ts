@@ -4,8 +4,8 @@ import { mockApi } from "./mockApi";
 
 const pages = [
   { path: "/", ready: "Last 24h & next 24h" },
-  { path: "/planner", ready: "Best time for" },
-  { path: "/tea", ready: "Your cup right now" },
+  { path: "/?appliance=ev&by=07:00", ready: "Start at" },
+  { path: "/?postcode=SW1A", ready: "London is at" },
 ];
 
 for (const theme of ["dark", "light"] as const) {
