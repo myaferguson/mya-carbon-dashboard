@@ -39,6 +39,12 @@ vi.mock("../src/hooks/useIntensityForecast", () => {
   };
 });
 
+vi.mock("../src/hooks/useRegions", () => {
+  return {
+    useRegions: () => ({ loading: false, error: null, data: null }),
+  };
+});
+
 describe("App", () => {
   it("renders the app header", () => {
     render(<App />);

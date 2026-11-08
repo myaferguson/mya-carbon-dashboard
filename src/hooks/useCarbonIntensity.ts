@@ -3,6 +3,7 @@ import type {
   IntensityIndex,
 } from "../types/carbonIntensity";
 import { useApiData, type ApiDataResult } from "./useApiData";
+import { useLocationContext } from "../context/locationContext";
 
 export type UseCarbonIntensityResult = ApiDataResult<CarbonIntensity>;
 
@@ -29,10 +30,19 @@ function toCarbonIntensity(json: CarbonIntensityResponse): CarbonIntensity {
   };
 }
 
+/** Current intensity for the chosen region, or GB if no postcode is set. */
 export function useCarbonIntensity(): UseCarbonIntensityResult {
-  return useApiData(
-    "https://api.carbonintensity.org.uk/intensity",
+  const { outcode, region, regionLoading, regionError } = useLocationContext();
+  const national = useApiData(
+    outcode ? null : "https://api.carbonintensity.org.uk/intensity",
     toCarbonIntensity,
     "Could not load current intensity data.",
   );
+
+  if (!outcode) return national;
+  return {
+    data: region?.intensity ?? null,
+    loading: regionLoading,
+    error: regionError,
+  };
 }

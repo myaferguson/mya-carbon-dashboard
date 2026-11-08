@@ -6,8 +6,16 @@ export type ApiDataResult<T> = {
   error: string | null;
 };
 
+type Settled<T> = {
+  url: string;
+  data: T | null;
+  error: string | null;
+};
+
 /**
- * Fetches JSON from `url` once on mount and maps it with `transform`.
+ * Fetches JSON from `url` and maps it with `transform`. Pass `null` as the
+ * url to skip fetching. When the url changes, the old data is dropped and
+ * the new url is fetched.
  *
  * `transform` must be stable between renders (define it at module level),
  * otherwise the request will repeat on every render.
@@ -15,20 +23,21 @@ export type ApiDataResult<T> = {
  * On failure the real error is logged and `errorMessage` is exposed as `error`.
  */
 export function useApiData<TJson, TData>(
-  url: string,
+  url: string | null,
   transform: (json: TJson) => TData,
   errorMessage: string,
 ): ApiDataResult<TData> {
-  const [data, setData] = useState<TData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  // Results are tagged with the url they belong to, so a url change shows
+  // as loading straight away without resetting state inside the effect.
+  const [settled, setSettled] = useState<Settled<TData> | null>(null);
 
   useEffect(() => {
+    if (!url) return;
     let cancelled = false;
 
-    async function fetchData(): Promise<void> {
+    async function fetchData(fetchUrl: string): Promise<void> {
       try {
-        const response = await fetch(url);
+        const response = await fetch(fetchUrl);
         if (!response.ok) {
           throw new Error(
             `API returned ${response.status}: ${response.statusText}`,
@@ -37,24 +46,21 @@ export function useApiData<TJson, TData>(
         const json = (await response.json()) as TJson;
 
         if (cancelled) return;
-
-        setData(transform(json));
+        setSettled({ url: fetchUrl, data: transform(json), error: null });
       } catch (err) {
         if (cancelled) return;
-        console.error(`Failed to fetch ${url}:`, err);
-        setError(errorMessage);
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        console.error(`Failed to fetch ${fetchUrl}:`, err);
+        setSettled({ url: fetchUrl, data: null, error: errorMessage });
       }
     }
 
-    fetchData();
+    fetchData(url);
     return () => {
       cancelled = true;
     };
   }, [url, transform, errorMessage]);
 
-  return { data, loading, error };
+  if (!url) return { data: null, loading: false, error: null };
+  if (settled?.url !== url) return { data: null, loading: true, error: null };
+  return { data: settled.data, loading: false, error: settled.error };
 }

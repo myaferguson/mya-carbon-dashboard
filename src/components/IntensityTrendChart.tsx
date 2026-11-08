@@ -68,6 +68,8 @@ export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
     ? time(periods[periods.length - 1].to)
     : now;
   const bands: IndexBand[] = toIndexBands(periods);
+  // Regional data is forecast-only, so there's no "last 24h" to show.
+  const hasActuals: boolean = periods.some((p) => p.actual !== null);
 
   async function downloadPng(): Promise<void> {
     if (!chartRef.current) return;
@@ -94,18 +96,22 @@ export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between mb-6">
         <div>
           <p className="text-[var(--muted)] text-sm uppercase tracking-wide">
-            Last 24h &amp; next 24h
+            {hasActuals ? "Last 24h & next 24h" : "Next 48h"}
           </p>
           <p className="text-[var(--muted)] text-xs mt-1">
-            Actual intensity so far, forecast from now on. Shading shows the
-            intensity level.
+            {hasActuals
+              ? "Actual intensity so far, forecast from now on."
+              : "Forecast for your area (regional data is forecast only)."}{" "}
+            Shading shows the intensity level.
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
-            <span className="inline-block w-4 h-0.5 bg-[var(--text)] rounded" />
-            Actual
-          </span>
+          {hasActuals && (
+            <span className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
+              <span className="inline-block w-4 h-0.5 bg-[var(--text)] rounded" />
+              Actual
+            </span>
+          )}
           <span className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
             <span className="inline-block w-4 h-0.5 border-t border-dashed border-[var(--muted)]" />
             Forecast

@@ -73,4 +73,38 @@ describe("useApiData", () => {
     expect(result.current.data).toBeNull();
     expect(result.current.error).toBe(ERROR_MESSAGE);
   });
+
+  it("does nothing when the url is null", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { result } = renderHook(() =>
+      useApiData(null, double, ERROR_MESSAGE),
+    );
+
+    expect(result.current).toEqual({ data: null, loading: false, error: null });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("drops old data and refetches when the url changes", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string) =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ value: url.endsWith("a") ? 1 : 2 }),
+        }),
+      ),
+    );
+
+    const { result, rerender } = renderHook(
+      ({ url }) => useApiData(url, double, ERROR_MESSAGE),
+      { initialProps: { url: "https://example.test/a" } },
+    );
+    await waitFor(() => expect(result.current.data).toBe(2));
+
+    rerender({ url: "https://example.test/b" });
+    expect(result.current).toEqual({ data: null, loading: true, error: null });
+    await waitFor(() => expect(result.current.data).toBe(4));
+  });
 });

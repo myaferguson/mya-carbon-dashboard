@@ -2,6 +2,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Field, Label, Switch } from "@headlessui/react";
 import type { Theme } from "../types/types";
+import { LocationBar } from "../components/LocationBar";
 
 /** Saved theme if there is a valid one, otherwise the system preference. */
 function getInitialTheme(): Theme {
@@ -62,6 +63,7 @@ export function Layout() {
           </Field>
         </div>
         <div className="border-b border-[var(--border)] mt-2" />
+        <LocationBar />
         {/* flex 1 allows the main content area to grow and fill the available
         vertical space, pushing the footer to the bottom of the page. */}
         <div className="py-8 sm:py-10 flex-1">

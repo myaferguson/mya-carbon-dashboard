@@ -4,15 +4,16 @@ import type {
   HalfHourPeriod,
 } from "../types/dailyIntensity";
 import { useApiData, type ApiDataResult } from "./useApiData";
+import { useLocationContext } from "../context/locationContext";
+import {
+  regionalForecastUrl,
+  toApiTime,
+  toRegionalPeriods,
+} from "../utils/regional";
 
 export type UseIntensityForecastResult = ApiDataResult<HalfHourPeriod[]>;
 
 const HOUR_MS = 60 * 60 * 1000;
-
-/** The API wants minute-precision UTC timestamps, e.g. 2026-11-08T22:30Z. */
-function toApiTime(date: Date): string {
-  return `${date.toISOString().slice(0, 16)}Z`;
-}
 
 /** Builds the URL for the last 24h (with actuals) and next 24h (forecast). */
 export function forecastUrl(now: Date): string {
@@ -33,14 +34,26 @@ export function toHalfHourPeriods(json: {
   }));
 }
 
-/** Half-hour intensity from 24 hours ago to 24 hours ahead. */
+/**
+ * Half-hour intensity periods. Nationally: 24 hours ago to 24 hours ahead,
+ * with actual values for the past. For a postcode: the next 48 hours,
+ * forecast only (the regional API has no actual values).
+ */
 export function useIntensityForecast(): UseIntensityForecastResult {
+  const { outcode } = useLocationContext();
   // Fixed for the life of the component so the request isn't repeated.
-  const [url] = useState<string>(() => forecastUrl(new Date()));
+  const [now] = useState<Date>(() => new Date());
 
-  return useApiData(
-    url,
+  const national = useApiData(
+    outcode ? null : forecastUrl(now),
     toHalfHourPeriods,
     "Could not load the intensity forecast.",
   );
+  const regional = useApiData(
+    outcode ? regionalForecastUrl(outcode, now) : null,
+    toRegionalPeriods,
+    "Could not load the forecast for your area.",
+  );
+
+  return outcode ? regional : national;
 }
