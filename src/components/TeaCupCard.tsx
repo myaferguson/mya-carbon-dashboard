@@ -1,5 +1,5 @@
 import type { CarbonIntensity } from "../types/carbonIntensity";
-import { co2PerCup as calcCo2PerCup, KWH_PER_CUP } from "../utils/tea";
+import { co2PerCup as calcCo2PerCup, KWH_PER_CUP } from "../utils/planner";
 
 interface Props {
   data: CarbonIntensity;

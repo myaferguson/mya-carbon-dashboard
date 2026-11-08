@@ -5,6 +5,8 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  ReferenceArea,
+  ReferenceLine,
 } from "recharts";
 import type { HalfHourPeriod } from "../types/dailyIntensity";
 import type {
@@ -14,10 +16,25 @@ import type {
 import React from "react";
 import { toPng } from "html-to-image";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { formatClock } from "../utils/formatTime";
+import { formatClockWithDay } from "../utils/formatTime";
+import {
+  formatTick,
+  sixHourTicks,
+  toIndexBands,
+  type IndexBand,
+} from "../utils/chart";
+import { useNow } from "../hooks/useNow";
 
-type DailyTrendChartProps = {
+type IntensityTrendChartProps = {
   periods: HalfHourPeriod[];
+};
+
+const time = (iso: string): number => new Date(iso).getTime();
+
+type ChartDataPoint = {
+  ts: number;
+  actual: number | null;
+  forecast: number;
 };
 
 function downloadCsv(periods: HalfHourPeriod[]): void {
@@ -35,28 +52,32 @@ function downloadCsv(periods: HalfHourPeriod[]): void {
   URL.revokeObjectURL(url);
 }
 
-type ChartDataPoint = {
-  time: string;
-  actual: number | null;
-  forecast: number;
-};
-
-export function DailyTrendChart({ periods }: DailyTrendChartProps) {
+export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
   const chartRef = React.useRef<HTMLDivElement>(null);
+  const now: number = useNow().getTime();
 
   const data: ChartDataPoint[] = periods.map(
     (period: HalfHourPeriod): ChartDataPoint => ({
-      time: formatClock(period.from),
+      ts: time(period.from),
       actual: period.actual,
       forecast: period.forecast,
     }),
   );
+  const start: number = periods.length ? time(periods[0].from) : now;
+  const end: number = periods.length
+    ? time(periods[periods.length - 1].to)
+    : now;
+  const bands: IndexBand[] = toIndexBands(periods);
 
   async function downloadPng(): Promise<void> {
     if (!chartRef.current) return;
     try {
+      const background: string =
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--bg")
+          .trim() || "#0f172a";
       const dataUrl: string = await toPng(chartRef.current, {
-        backgroundColor: "#0f172a",
+        backgroundColor: background,
         pixelRatio: 2,
       });
       const link: HTMLAnchorElement = document.createElement("a");
@@ -70,16 +91,17 @@ export function DailyTrendChart({ periods }: DailyTrendChartProps) {
 
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 sm:p-8">
-      <div className="flex items-baseline justify-between mb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between mb-6">
         <div>
           <p className="text-[var(--muted)] text-sm uppercase tracking-wide">
-            24-hour trend
+            Last 24h &amp; next 24h
           </p>
           <p className="text-[var(--muted)] text-xs mt-1">
-            Actual vs forecast intensity today
+            Actual intensity so far, forecast from now on. Shading shows the
+            intensity level.
           </p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
             <span className="inline-block w-4 h-0.5 bg-[var(--text)] rounded" />
             Actual
@@ -89,7 +111,7 @@ export function DailyTrendChart({ periods }: DailyTrendChartProps) {
             Forecast
           </span>
           <Menu as="div" className="relative">
-            <MenuButton className="text-[var(--muted)] hover:text-[var(--text)] transition-colors text-sm px-2 py-1 rounded border border-[var(--border)] hover:border-[var(--muted)]">
+            <MenuButton className="whitespace-nowrap text-[var(--muted)] hover:text-[var(--text)] transition-colors text-sm px-2 py-1 rounded border border-[var(--border)] hover:border-[var(--muted)]">
               Export ↓
             </MenuButton>
             <MenuItems className="absolute right-0 mt-1 w-40 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-lg z-10 overflow-hidden">
@@ -118,20 +140,34 @@ export function DailyTrendChart({ periods }: DailyTrendChartProps) {
         <ResponsiveContainer width="100%" height={280}>
           <LineChart
             data={data}
-            margin={{ top: 4, right: 8, bottom: 4, left: 0 }}
+            margin={{ top: 16, right: 8, bottom: 4, left: 0 }}
           >
+            {bands.map((band) => (
+              <ReferenceArea
+                key={band.from}
+                x1={band.from}
+                x2={band.to}
+                fill={`var(--index-${band.index.replace(" ", "-")}-bg)`}
+                fillOpacity={1}
+                stroke="none"
+                ifOverflow="hidden"
+              />
+            ))}
             <XAxis
-              dataKey="time"
+              dataKey="ts"
+              type="number"
+              scale="time"
+              domain={[start, end]}
+              ticks={sixHourTicks(start, end)}
+              tickFormatter={formatTick}
               stroke="var(--muted)"
               tick={{ fill: "var(--muted)", fontSize: 11 }}
               tickLine={false}
-              interval={5}
             />
             <YAxis
               stroke="var(--muted)"
               tick={{ fill: "var(--muted)", fontSize: 11 }}
               tickLine={false}
-              tickFormatter={(v: number) => `${v}`}
               width={40}
             />
             <Tooltip
@@ -143,13 +179,29 @@ export function DailyTrendChart({ periods }: DailyTrendChartProps) {
                 fontSize: 13,
               }}
               labelStyle={{ color: "var(--muted)", marginBottom: 4 }}
+              labelFormatter={(ts) =>
+                formatClockWithDay(new Date(Number(ts)).toISOString())
+              }
               formatter={(
                 value: ValueType | undefined,
                 name: NameType | undefined,
               ): [string, string] => [
-                value !== null ? `${value} gCO₂/kWh` : "No data",
+                value !== null && value !== undefined
+                  ? `${value} gCO₂/kWh`
+                  : "No data",
                 name === "actual" ? "Actual" : "Forecast",
               ]}
+            />
+            <ReferenceLine
+              x={now}
+              stroke="var(--text)"
+              strokeDasharray="2 3"
+              label={{
+                value: "Now",
+                position: "top",
+                fill: "var(--text)",
+                fontSize: 11,
+              }}
             />
             <Line
               type="monotone"

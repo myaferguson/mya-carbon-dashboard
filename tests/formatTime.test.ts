@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  dayLabel,
   formatClock,
+  formatClockWithDay,
   formatRelativeTime,
   formatTimeRange,
 } from "../src/utils/formatTime";
@@ -55,5 +57,26 @@ describe("formatRelativeTime", () => {
   it("returns the full date for a day or more ago", () => {
     const iso = ago(2 * 24 * 60 * MINUTE);
     expect(formatRelativeTime(iso)).toBe(new Date(iso).toLocaleString("en-GB"));
+  });
+});
+
+describe("dayLabel and formatClockWithDay", () => {
+  const now = new Date(2026, 4, 16, 22, 0); // Sat 16 May, 22:00 local
+
+  it("adds nothing for today", () => {
+    expect(dayLabel(localIso(23, 30), now)).toBe("");
+    expect(formatClockWithDay(localIso(23, 30), now)).toBe("23:30");
+  });
+
+  it("labels tomorrow and yesterday", () => {
+    const tomorrow = new Date(2026, 4, 17, 3, 30).toISOString();
+    const yesterday = new Date(2026, 4, 15, 9, 0).toISOString();
+    expect(formatClockWithDay(tomorrow, now)).toBe("03:30 tomorrow");
+    expect(formatClockWithDay(yesterday, now)).toBe("09:00 yesterday");
+  });
+
+  it("uses a short weekday further out", () => {
+    const monday = new Date(2026, 4, 18, 12, 0).toISOString();
+    expect(dayLabel(monday, now)).toBe("Mon");
   });
 });

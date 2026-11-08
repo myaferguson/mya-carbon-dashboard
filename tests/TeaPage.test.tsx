@@ -16,20 +16,20 @@ vi.mock("../src/hooks/useCarbonIntensity", () => ({
   }),
 }));
 
-vi.mock("../src/hooks/useDailyIntensity", () => ({
-  useDailyIntensity: () => ({
+vi.mock("../src/hooks/useIntensityForecast", () => ({
+  useIntensityForecast: () => ({
     loading: false,
-    error: "Could not load daily intensity data.",
+    error: "Could not load the intensity forecast.",
     data: null,
   }),
 }));
 
 describe("TeaPage", () => {
-  it("shows an error when the daily intensity data fails to load", () => {
+  it("shows an error when the forecast fails to load", () => {
     render(<TeaPage />);
 
     expect(
-      screen.getByText("Could not load daily intensity data."),
+      screen.getByText("Could not load the intensity forecast."),
     ).toBeInTheDocument();
     expect(screen.queryByText(/Best time to brew/)).not.toBeInTheDocument();
   });

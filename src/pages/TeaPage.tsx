@@ -5,9 +5,9 @@ import {
 } from "../hooks/useCarbonIntensity";
 import { TeaCupCard } from "../components/TeaCupCard";
 import {
-  useDailyIntensity,
-  type UseDailyIntensityResult,
-} from "../hooks/useDailyIntensity";
+  useIntensityForecast,
+  type UseIntensityForecastResult,
+} from "../hooks/useIntensityForecast";
 import { OptimalBrewCard } from "../components/OptimalBrewCard";
 import React from "react";
 
@@ -68,7 +68,7 @@ const HERO_CONFIG: Record<IntensityIndex, HeroConfig> = {
 export function TeaPage() {
   const { data, loading, error }: UseCarbonIntensityResult =
     useCarbonIntensity();
-  const dailyIntensity: UseDailyIntensityResult = useDailyIntensity();
+  const forecast: UseIntensityForecastResult = useIntensityForecast();
 
   return (
     <>
@@ -89,17 +89,17 @@ export function TeaPage() {
             <HeroCard index={data.index} />
             <TeaCupCard data={data} />
 
-            {dailyIntensity.loading && (
+            {forecast.loading && (
               <p className="text-[var(--muted)]">
                 Finding the best time to brew…
               </p>
             )}
-            {dailyIntensity.error && (
-              <p className="text-red-400">{dailyIntensity.error}</p>
+            {forecast.error && (
+              <p className="text-red-400">{forecast.error}</p>
             )}
-            {dailyIntensity.data && (
+            {forecast.data && (
               <OptimalBrewCard
-                periods={dailyIntensity.data}
+                periods={forecast.data}
                 currentIntensity={data.actual ?? data.forecast}
               />
             )}

@@ -10,15 +10,16 @@ import { CurrentIntensityCard } from "../components/CurrentIntensityCard";
 import { GenerationMixChart } from "../components/GenerationMixChart";
 import React from "react";
 import {
-  useDailyIntensity,
-  type UseDailyIntensityResult,
-} from "../hooks/useDailyIntensity";
-import { DailyTrendChart } from "../components/DailyTrendChart";
+  useIntensityForecast,
+  type UseIntensityForecastResult,
+} from "../hooks/useIntensityForecast";
+import { IntensityTrendChart } from "../components/IntensityTrendChart";
+import { ForecastSummaryCard } from "../components/ForecastSummaryCard";
 
 export function DashboardPage() {
   const intensity: UseCarbonIntensityResult = useCarbonIntensity();
   const generation: UseGenerationMixResult = useGenerationMix();
-  const dailyIntensity: UseDailyIntensityResult = useDailyIntensity();
+  const forecast: UseIntensityForecastResult = useIntensityForecast();
 
   return (
     <React.Fragment>
@@ -38,17 +39,19 @@ export function DashboardPage() {
           <p className="text-zinc-400">Loading current intensity…</p>
         )}
         {intensity.error && <p className="text-red-400">{intensity.error}</p>}
+        {intensity.data && forecast.data && (
+          <ForecastSummaryCard
+            current={intensity.data}
+            periods={forecast.data}
+          />
+        )}
         {intensity.data && <CurrentIntensityCard data={intensity.data} />}
 
-        {dailyIntensity.loading && (
+        {forecast.loading && (
           <p className="text-[var(--muted)]">Loading trend data…</p>
         )}
-        {dailyIntensity.error && (
-          <p className="text-red-400">{dailyIntensity.error}</p>
-        )}
-        {dailyIntensity.data && (
-          <DailyTrendChart periods={dailyIntensity.data} />
-        )}
+        {forecast.error && <p className="text-red-400">{forecast.error}</p>}
+        {forecast.data && <IntensityTrendChart periods={forecast.data} />}
 
         {generation.loading && (
           <p className="text-zinc-400">Loading generation mix…</p>

@@ -29,6 +29,16 @@ vi.mock("../src/hooks/useGenerationMix", () => {
   };
 });
 
+vi.mock("../src/hooks/useIntensityForecast", () => {
+  return {
+    useIntensityForecast: () => ({
+      loading: false,
+      error: null,
+      data: [],
+    }),
+  };
+});
+
 describe("App", () => {
   it("renders the app header", () => {
     render(<App />);

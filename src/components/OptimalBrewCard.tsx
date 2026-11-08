@@ -1,10 +1,18 @@
 import type { HalfHourPeriod } from "../types/dailyIntensity";
-import { formatClock } from "../utils/formatTime";
+import {
+  dayLabel,
+  formatClock,
+  formatClockWithDay,
+} from "../utils/formatTime";
 import {
   co2PerCup,
-  findCleanestUpcomingPeriod,
-  periodIntensity,
-} from "../utils/tea";
+  findBestWindow,
+  type BestWindow,
+} from "../utils/planner";
+
+import { useNow } from "../hooks/useNow";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 type OptimalBrewCardProps = {
   periods: HalfHourPeriod[];
@@ -15,17 +23,18 @@ export function OptimalBrewCard({
   periods,
   currentIntensity,
 }: OptimalBrewCardProps) {
-  const now: Date = new Date();
-  const cleanestPeriod: HalfHourPeriod | null = findCleanestUpcomingPeriod(
-    periods,
+  const now: Date = useNow();
+  const best: BestWindow | null = findBestWindow(periods, 1, {
     now,
-  );
+    deadline: new Date(now.getTime() + DAY_MS),
+  });
 
-  // Nothing left of today to compare against.
-  if (!cleanestPeriod) return null;
+  // No forecast data ahead to compare against.
+  if (!best) return null;
 
+  const cleanestPeriod: HalfHourPeriod = best.periods[0];
   const isNow: boolean = new Date(cleanestPeriod.from) <= now;
-  const cleanestIntensity: number = periodIntensity(cleanestPeriod);
+  const cleanestIntensity: number = best.avgIntensity;
   const co2Now: number = co2PerCup(currentIntensity);
   const co2Optimal: number = co2PerCup(cleanestIntensity);
   const saving: number = co2Now - co2Optimal;
@@ -33,7 +42,7 @@ export function OptimalBrewCard({
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 sm:p-8">
       <p className="text-[var(--muted)] text-sm uppercase tracking-wide">
-        Best time to brew (rest of today)
+        Best time to brew (next 24h)
       </p>
 
       <p className="mt-3">
@@ -42,6 +51,9 @@ export function OptimalBrewCard({
         </span>
         <span className="ml-2 text-[var(--muted)] text-lg">
           {isNow ? "until" : "-"} {formatClock(cleanestPeriod.to)}
+          {!isNow && dayLabel(cleanestPeriod.from, now) && (
+            <> {dayLabel(cleanestPeriod.from, now)}</>
+          )}
         </span>
       </p>
 
@@ -59,7 +71,7 @@ export function OptimalBrewCard({
         {!isNow && (
           <div className="flex justify-between text-sm">
             <span className="text-[var(--muted)]">
-              A cup at {formatClock(cleanestPeriod.from)}
+              A cup at {formatClockWithDay(cleanestPeriod.from, now)}
             </span>
             <span className="font-medium" style={{ color: "#4ade80" }}>
               {co2Optimal.toFixed(1)}g CO₂
