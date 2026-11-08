@@ -32,7 +32,8 @@ function toCarbonIntensity(json: CarbonIntensityResponse): CarbonIntensity {
 
 /** Current intensity for the chosen region, or GB if no postcode is set. */
 export function useCarbonIntensity(): UseCarbonIntensityResult {
-  const { outcode, region, regionLoading, regionError } = useLocationContext();
+  const { outcode, region, regionLoading, regionError, regionRefetch } =
+    useLocationContext();
   const national = useApiData(
     outcode ? null : "https://api.carbonintensity.org.uk/intensity",
     toCarbonIntensity,
@@ -44,5 +45,6 @@ export function useCarbonIntensity(): UseCarbonIntensityResult {
     data: region?.intensity ?? null,
     loading: regionLoading,
     error: regionError,
+    refetch: regionRefetch,
   };
 }

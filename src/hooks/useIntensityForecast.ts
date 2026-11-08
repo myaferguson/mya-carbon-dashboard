@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useNow } from "./useNow";
 import type {
   DailyIntensityResponse,
   HalfHourPeriod,
@@ -16,6 +16,13 @@ export type UseIntensityForecastResult = ApiDataResult<HalfHourPeriod[]>;
 const HOUR_MS = 60 * 60 * 1000;
 
 /** Builds the URL for the last 24h (with actuals) and next 24h (forecast). */
+/** Rounds down to the start of the half hour, so urls are shared and cacheable. */
+export function startOfHalfHour(date: Date): Date {
+  const d = new Date(date);
+  d.setUTCMinutes(d.getUTCMinutes() < 30 ? 0 : 30, 0, 0);
+  return d;
+}
+
 export function forecastUrl(now: Date): string {
   const from = new Date(now.getTime() - 24 * HOUR_MS);
   const to = new Date(now.getTime() + 24 * HOUR_MS);
@@ -41,16 +48,17 @@ export function toHalfHourPeriods(json: {
  */
 export function useIntensityForecast(): UseIntensityForecastResult {
   const { outcode } = useLocationContext();
-  // Fixed for the life of the component so the request isn't repeated.
-  const [now] = useState<Date>(() => new Date());
+  // Rounded to the half hour: every component in the same half hour shares
+  // one request, and a new one is made when the next half hour starts.
+  const halfHour: Date = startOfHalfHour(useNow());
 
   const national = useApiData(
-    outcode ? null : forecastUrl(now),
+    outcode ? null : forecastUrl(halfHour),
     toHalfHourPeriods,
     "Could not load the intensity forecast.",
   );
   const regional = useApiData(
-    outcode ? regionalForecastUrl(outcode, now) : null,
+    outcode ? regionalForecastUrl(outcode, halfHour) : null,
     toRegionalPeriods,
     "Could not load the forecast for your area.",
   );

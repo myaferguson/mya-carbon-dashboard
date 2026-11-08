@@ -22,7 +22,8 @@ function toGenerationMix(json: GenerationMixResponse): GenerationMix {
 
 /** Current fuel mix for the chosen region, or GB if no postcode is set. */
 export function useGenerationMix(): UseGenerationMixResult {
-  const { outcode, region, regionLoading, regionError } = useLocationContext();
+  const { outcode, region, regionLoading, regionError, regionRefetch } =
+    useLocationContext();
   const national = useApiData(
     outcode ? null : "https://api.carbonintensity.org.uk/generation",
     toGenerationMix,
@@ -34,5 +35,6 @@ export function useGenerationMix(): UseGenerationMixResult {
     data: region?.mix ?? null,
     loading: regionLoading,
     error: regionError,
+    refetch: regionRefetch,
   };
 }

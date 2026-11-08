@@ -1,4 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react";
+import { createQueryWrapper } from "./support/queryWrapper";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useApiData } from "../src/hooks/useApiData";
 
@@ -25,9 +26,9 @@ describe("useApiData", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const { result } = renderHook(() =>
-      useApiData(URL, double, ERROR_MESSAGE),
-    );
+    const { result } = renderHook(() => useApiData(URL, double, ERROR_MESSAGE), {
+      wrapper: createQueryWrapper(),
+    });
 
     expect(result.current.loading).toBe(true);
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -47,9 +48,9 @@ describe("useApiData", () => {
       }),
     );
 
-    const { result } = renderHook(() =>
-      useApiData(URL, double, ERROR_MESSAGE),
-    );
+    const { result } = renderHook(() => useApiData(URL, double, ERROR_MESSAGE), {
+      wrapper: createQueryWrapper(),
+    });
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -64,9 +65,9 @@ describe("useApiData", () => {
   it("shows the friendly message when the request is rejected", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
 
-    const { result } = renderHook(() =>
-      useApiData(URL, double, ERROR_MESSAGE),
-    );
+    const { result } = renderHook(() => useApiData(URL, double, ERROR_MESSAGE), {
+      wrapper: createQueryWrapper(),
+    });
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -78,9 +79,9 @@ describe("useApiData", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
-    const { result } = renderHook(() =>
-      useApiData(null, double, ERROR_MESSAGE),
-    );
+    const { result } = renderHook(() => useApiData(null, double, ERROR_MESSAGE), {
+      wrapper: createQueryWrapper(),
+    });
 
     expect(result.current).toEqual({ data: null, loading: false, error: null });
     expect(fetchMock).not.toHaveBeenCalled();
@@ -99,12 +100,41 @@ describe("useApiData", () => {
 
     const { result, rerender } = renderHook(
       ({ url }) => useApiData(url, double, ERROR_MESSAGE),
-      { initialProps: { url: "https://example.test/a" } },
+      {
+        initialProps: { url: "https://example.test/a" },
+        wrapper: createQueryWrapper(),
+      },
     );
     await waitFor(() => expect(result.current.data).toBe(2));
 
     rerender({ url: "https://example.test/b" });
-    expect(result.current).toEqual({ data: null, loading: true, error: null });
+    expect(result.current).toMatchObject({ data: null, loading: true, error: null });
     await waitFor(() => expect(result.current.data).toBe(4));
+  });
+
+  it("keeps showing old data while the next half hour's data loads", async () => {
+    let resolveSecond: (v: unknown) => void = () => {};
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ value: 1 }) })
+        .mockReturnValueOnce(new Promise((r) => (resolveSecond = r))),
+    );
+
+    const { result, rerender } = renderHook(
+      ({ url }) => useApiData(url, double, ERROR_MESSAGE),
+      {
+        initialProps: { url: "https://example.test/x/2026-05-16T12:00Z" },
+        wrapper: createQueryWrapper(),
+      },
+    );
+    await waitFor(() => expect(result.current.data).toBe(2));
+
+    rerender({ url: "https://example.test/x/2026-05-16T12:30Z" });
+    expect(result.current).toMatchObject({ data: 2, loading: false });
+
+    resolveSecond({ ok: true, json: () => Promise.resolve({ value: 5 }) });
+    await waitFor(() => expect(result.current.data).toBe(10));
   });
 });

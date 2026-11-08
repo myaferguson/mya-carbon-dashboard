@@ -1,24 +1,36 @@
-import { useEffect, useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 export type ApiDataResult<T> = {
   data: T | null;
   loading: boolean;
   error: string | null;
-};
-
-type Settled<T> = {
-  url: string;
-  data: T | null;
-  error: string | null;
+  /** Fetch again now, e.g. from a Retry button. */
+  refetch?: () => void;
+  /** When the data was last fetched (ms since epoch), or 0 if never. */
+  updatedAt?: number;
 };
 
 /**
- * Fetches JSON from `url` and maps it with `transform`. Pass `null` as the
- * url to skip fetching. When the url changes, the old data is dropped and
- * the new url is fetched.
+ * True when two urls differ only by their timestamps, i.e. the same data
+ * for a later time. A different postcode or endpoint doesn't count.
+ */
+function sameEndpoint(previous: unknown, next: string | null): boolean {
+  if (typeof previous !== "string" || next === null) return false;
+  const strip = (u: string) => u.replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z/g, "");
+  return strip(previous) === strip(next);
+}
+
+/** The API publishes new figures every half hour. */
+export const REFRESH_INTERVAL_MS = 30 * 60 * 1000;
+
+/**
+ * Fetches JSON from `url` and maps it with `transform`, using TanStack
+ * Query so the same url is fetched once and shared between components and
+ * pages. Data refreshes every 30 minutes and when the tab regains focus.
+ * Pass `null` as the url to skip fetching.
  *
- * `transform` must be stable between renders (define it at module level),
- * otherwise the request will repeat on every render.
+ * Each url must always be used with the same `transform`, because the
+ * cache is keyed by url.
  *
  * On failure the real error is logged and `errorMessage` is exposed as `error`.
  */
@@ -27,40 +39,40 @@ export function useApiData<TJson, TData>(
   transform: (json: TJson) => TData,
   errorMessage: string,
 ): ApiDataResult<TData> {
-  // Results are tagged with the url they belong to, so a url change shows
-  // as loading straight away without resetting state inside the effect.
-  const [settled, setSettled] = useState<Settled<TData> | null>(null);
-
-  useEffect(() => {
-    if (!url) return;
-    let cancelled = false;
-
-    async function fetchData(fetchUrl: string): Promise<void> {
+  const query = useQuery({
+    queryKey: ["api", url],
+    enabled: url !== null,
+    queryFn: async (): Promise<TData> => {
       try {
-        const response = await fetch(fetchUrl);
+        const response = await fetch(url as string);
         if (!response.ok) {
           throw new Error(
             `API returned ${response.status}: ${response.statusText}`,
           );
         }
-        const json = (await response.json()) as TJson;
-
-        if (cancelled) return;
-        setSettled({ url: fetchUrl, data: transform(json), error: null });
+        return transform((await response.json()) as TJson);
       } catch (err) {
-        if (cancelled) return;
-        console.error(`Failed to fetch ${fetchUrl}:`, err);
-        setSettled({ url: fetchUrl, data: null, error: errorMessage });
+        console.error(`Failed to fetch ${url}:`, err);
+        throw err;
       }
-    }
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: REFRESH_INTERVAL_MS,
+    refetchOnWindowFocus: true,
+    // When the url moves on (e.g. the next half hour), keep showing the old
+    // data until the new data arrives instead of flashing a loading state.
+    placeholderData: (previous, previousQuery) =>
+      sameEndpoint(previousQuery?.queryKey[1], url)
+        ? keepPreviousData(previous)
+        : undefined,
+  });
 
-    fetchData(url);
-    return () => {
-      cancelled = true;
-    };
-  }, [url, transform, errorMessage]);
-
-  if (!url) return { data: null, loading: false, error: null };
-  if (settled?.url !== url) return { data: null, loading: true, error: null };
-  return { data: settled.data, loading: false, error: settled.error };
+  if (url === null) return { data: null, loading: false, error: null };
+  return {
+    data: query.data ?? null,
+    loading: query.isPending,
+    error: query.isError ? errorMessage : null,
+    refetch: () => void query.refetch(),
+    updatedAt: query.dataUpdatedAt,
+  };
 }

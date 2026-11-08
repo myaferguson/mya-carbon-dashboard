@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   forecastUrl,
+  startOfHalfHour,
   toHalfHourPeriods,
 } from "../src/hooks/useIntensityForecast";
 
@@ -33,5 +34,16 @@ describe("toHalfHourPeriods", () => {
         index: "very high",
       },
     ]);
+  });
+});
+
+describe("startOfHalfHour", () => {
+  it("rounds down to :00 or :30", () => {
+    expect(startOfHalfHour(new Date("2026-11-08T22:32:45Z")).toISOString()).toBe(
+      "2026-11-08T22:30:00.000Z",
+    );
+    expect(startOfHalfHour(new Date("2026-11-08T22:29:59Z")).toISOString()).toBe(
+      "2026-11-08T22:00:00.000Z",
+    );
   });
 });

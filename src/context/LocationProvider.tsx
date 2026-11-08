@@ -69,8 +69,9 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       region: current.data,
       regionLoading: current.loading,
       regionError: current.error,
+      regionRefetch: current.refetch,
     }),
-    [outcode, setOutcode, current.data, current.loading, current.error],
+    [outcode, setOutcode, current.data, current.loading, current.error, current.refetch],
   );
 
   return (

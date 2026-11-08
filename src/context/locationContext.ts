@@ -9,6 +9,7 @@ export type LocationContextValue = {
   region: RegionCurrent | null;
   regionLoading: boolean;
   regionError: string | null;
+  regionRefetch?: () => void;
 };
 
 const national: LocationContextValue = {

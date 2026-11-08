@@ -1,4 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react";
+import { createQueryWrapper } from "./support/queryWrapper";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useCarbonIntensity } from "../src/hooks/useCarbonIntensity";
 
@@ -31,9 +32,9 @@ describe("useCarbonIntensity", () => {
   it("starts in a loading state", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
 
-    const { result } = renderHook(() => useCarbonIntensity());
+    const { result } = renderHook(() => useCarbonIntensity(), { wrapper: createQueryWrapper() });
 
-    expect(result.current).toEqual({ data: null, loading: true, error: null });
+    expect(result.current).toMatchObject({ data: null, loading: true, error: null });
   });
 
   it("fetches and maps the current intensity period", async () => {
@@ -42,7 +43,7 @@ describe("useCarbonIntensity", () => {
       json: () => Promise.resolve(apiResponse),
     });
 
-    const { result } = renderHook(() => useCarbonIntensity());
+    const { result } = renderHook(() => useCarbonIntensity(), { wrapper: createQueryWrapper() });
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -73,7 +74,7 @@ describe("useCarbonIntensity", () => {
         }),
     });
 
-    const { result } = renderHook(() => useCarbonIntensity());
+    const { result } = renderHook(() => useCarbonIntensity(), { wrapper: createQueryWrapper() });
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -84,7 +85,7 @@ describe("useCarbonIntensity", () => {
   it("reports an error when the API returns a non-OK status", async () => {
     mockFetch({ ok: false, status: 503, statusText: "Service Unavailable" });
 
-    const { result } = renderHook(() => useCarbonIntensity());
+    const { result } = renderHook(() => useCarbonIntensity(), { wrapper: createQueryWrapper() });
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -95,7 +96,7 @@ describe("useCarbonIntensity", () => {
   it("reports an error when the request fails", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network down")));
 
-    const { result } = renderHook(() => useCarbonIntensity());
+    const { result } = renderHook(() => useCarbonIntensity(), { wrapper: createQueryWrapper() });
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 

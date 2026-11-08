@@ -4,6 +4,7 @@ import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocationProvider } from "../src/context/LocationProvider";
 import { useLocationContext } from "../src/context/locationContext";
+import { createQueryWrapper } from "./support/queryWrapper";
 
 function Probe() {
   const { outcode, setOutcode, regionLoading } = useLocationContext();
@@ -20,12 +21,15 @@ function Probe() {
 }
 
 function renderAt(url: string) {
+  const QueryWrapper = createQueryWrapper();
   return render(
-    <MemoryRouter initialEntries={[url]}>
-      <LocationProvider>
-        <Probe />
-      </LocationProvider>
-    </MemoryRouter>,
+    <QueryWrapper>
+      <MemoryRouter initialEntries={[url]}>
+        <LocationProvider>
+          <Probe />
+        </LocationProvider>
+      </MemoryRouter>
+    </QueryWrapper>,
   );
 }
 
