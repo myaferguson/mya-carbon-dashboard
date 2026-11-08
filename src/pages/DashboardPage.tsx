@@ -7,19 +7,30 @@ import {
   type UseGenerationMixResult,
 } from "../hooks/useGenerationMix";
 import { CurrentIntensityCard } from "../components/CurrentIntensityCard";
-import { GenerationMixChart } from "../components/GenerationMixChart";
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import {
   useIntensityForecast,
   type UseIntensityForecastResult,
 } from "../hooks/useIntensityForecast";
-import { IntensityTrendChart } from "../components/IntensityTrendChart";
 import { ForecastSummaryCard } from "../components/ForecastSummaryCard";
 import { RegionComparisonCard } from "../components/RegionComparisonCard";
 import { useRegions } from "../hooks/useRegions";
 import { useLocationContext } from "../context/locationContext";
 import { CardSkeleton } from "../components/CardSkeleton";
 import { ErrorCard } from "../components/ErrorCard";
+
+// The charts pull in Recharts, the biggest dependency. Loading them
+// separately lets the summary and current figures appear first.
+const IntensityTrendChart = lazy(() =>
+  import("../components/IntensityTrendChart").then((m) => ({
+    default: m.IntensityTrendChart,
+  })),
+);
+const GenerationMixChart = lazy(() =>
+  import("../components/GenerationMixChart").then((m) => ({
+    default: m.GenerationMixChart,
+  })),
+);
 
 export function DashboardPage() {
   const intensity: UseCarbonIntensityResult = useCarbonIntensity();
@@ -85,7 +96,13 @@ export function DashboardPage() {
         {forecast.error && !areaNotFound && (
           <ErrorCard message={forecast.error} onRetry={forecast.refetch} />
         )}
-        {forecast.data && <IntensityTrendChart periods={forecast.data} />}
+        {forecast.data && (
+          <Suspense
+            fallback={<CardSkeleton label="Loading the chart" bodyHeight="h-64" />}
+          >
+            <IntensityTrendChart periods={forecast.data} />
+          </Suspense>
+        )}
 
         {regions.loading && (
           <CardSkeleton label="Loading regions" bodyHeight="h-72" />
@@ -102,10 +119,14 @@ export function DashboardPage() {
           <ErrorCard message={generation.error} onRetry={generation.refetch} />
         )}
         {generation.data && (
-          <GenerationMixChart
-            sources={generation.data.sources}
-            areaName={region?.name}
-          />
+          <Suspense
+            fallback={<CardSkeleton label="Loading the chart" bodyHeight="h-72" />}
+          >
+            <GenerationMixChart
+              sources={generation.data.sources}
+              areaName={region?.name}
+            />
+          </Suspense>
         )}
       </div>
     </React.Fragment>
