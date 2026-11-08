@@ -36,24 +36,37 @@ const FUEL_LABELS: Record<Fuel, string> = {
   other: "Other",
 };
 
+type ChartRow = GenerationSource & {
+  label: string;
+  color: string;
+};
+
+type BarShapeProps = {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  payload?: Partial<ChartRow>;
+};
+
+function RoundedBar({ x, y, width, height, payload }: BarShapeProps) {
+  return (
+    <rect
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      rx={4}
+      ry={4}
+      fill={payload?.color ?? "#64748b"}
+    />
+  );
+}
+
 export function GenerationMixChart({
   sources,
 }: GenerationMixChartProps): React.ReactElement {
-  function CustomBarShape(props: any) {
-    const { x, y, width, height, payload } = props;
-    return (
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        rx={4}
-        ry={4}
-        fill={payload?.color ?? "#64748b"}
-      />
-    );
-  }
-  const data: GenerationSource[] = [...sources]
+  const data: ChartRow[] = [...sources]
     .sort((a, b) => b.perc - a.perc)
     .map((source) => ({
       fuel: source.fuel,
@@ -108,7 +121,7 @@ export function GenerationMixChart({
           <Bar
             dataKey="perc"
             radius={[0, 4, 4, 0]}
-            shape={(props) => <CustomBarShape {...props} />}
+            shape={(props) => <RoundedBar {...props} />}
           />
         </BarChart>
       </ResponsiveContainer>

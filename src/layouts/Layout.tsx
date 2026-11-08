@@ -3,24 +3,22 @@ import { useEffect, useState } from "react";
 import { Field, Label, Switch } from "@headlessui/react";
 import type { Theme } from "../types/types";
 
+/** Saved theme if there is a valid one, otherwise the system preference. */
+function getInitialTheme(): Theme {
+  const storedTheme: string | null = localStorage.getItem("theme");
+  if (storedTheme === "light" || storedTheme === "dark") {
+    return storedTheme;
+  }
+
+  const prefersDarkTheme: boolean =
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  return prefersDarkTheme ? "dark" : "light";
+}
+
 export function Layout() {
-  const [theme, setTheme] = useState<Theme>("dark");
-
-  useEffect((): void => {
-    const storedTheme: Theme = localStorage.getItem("theme") as Theme;
-
-    if (storedTheme) {
-      setTheme(storedTheme);
-      return;
-    }
-
-    const prefersDarkTheme: boolean =
-      window &&
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-    setTheme(prefersDarkTheme ? "dark" : "light");
-  }, []);
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   useEffect((): void => {
     document.documentElement.classList.toggle("theme-light", theme === "light");
