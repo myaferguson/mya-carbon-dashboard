@@ -75,16 +75,16 @@ export function TeaPage() {
 
   return (
     <>
-      <header className="mb-8 sm:mb-10">
+      <div className="mb-8 sm:mb-10">
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
           Tea optimiser
         </h1>
         <p className="text-[var(--muted)] text-sm mt-1">
           Should you boil the kettle right now?
         </p>
-      </header>
+      </div>
 
-      <main className="space-y-6">
+      <div className="space-y-6">
         {loading && <CardSkeleton label="Checking the grid" bodyHeight="h-32" />}
         {error && <ErrorCard message={error} onRetry={refetch} />}
         {data && (
@@ -118,7 +118,7 @@ export function TeaPage() {
             </p>
           </React.Fragment>
         )}
-      </main>
+      </div>
     </>
   );
 }
@@ -141,7 +141,7 @@ function HeroCard({ index }: { index: IntensityIndex }) {
       >
         {cardConfig.title}
       </h2>
-      <p style={{ color: cardConfig.text, opacity: 0.8 }}>
+      <p style={{ color: cardConfig.text }}>
         {cardConfig.subtitle}
       </p>
     </div>

@@ -84,7 +84,7 @@ export function PlannerResult({
               <span className="text-[var(--muted)]">
                 At the recommended time
               </span>
-              <span className="font-medium" style={{ color: "#4ade80" }}>
+              <span className="font-medium" style={{ color: "var(--good)" }}>
                 ≈{formatCo2(co2Best ?? 0)} CO₂
               </span>
             </div>

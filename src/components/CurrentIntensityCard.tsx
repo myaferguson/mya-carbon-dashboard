@@ -1,6 +1,7 @@
 import type { CarbonIntensity } from "../types/carbonIntensity";
 import { formatTimeRange } from "../utils/formatTime";
 import { IndexBadge } from "./IndexBadge";
+import { LevelsExplainer, UnitExplainer } from "./IntensityExplainers";
 
 type CurrentIntensityCardProps = {
   data: CarbonIntensity;
@@ -22,11 +23,13 @@ export function CurrentIntensityCard({
       </p>
       <p className="mt-2">
         <span className="text-5xl sm:text-6xl font-semibold">{value}</span>
-        <span className="ml-2 text-[var(--muted)] text-lg">gCO₂/kWh</span>
+        <span className="ml-2 text-[var(--muted)] text-lg">gCO₂/kWh</span>{" "}
+        <UnitExplainer />
       </p>
 
       <div className="mt-6 flex items-center gap-3">
         <IndexBadge index={data.index} />
+        <LevelsExplainer />
         <span className="text-[var(--muted)] text-sm">
           {isActual ? "Actual" : "Forecast only"}
         </span>

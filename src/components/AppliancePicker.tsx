@@ -18,7 +18,7 @@ export function AppliancePicker({ value, onChange }: AppliancePickerProps) {
         <Radio
           key={appliance.id}
           value={appliance.id}
-          className="group cursor-pointer rounded-xl border border-[var(--border)] p-3 transition-colors hover:border-[var(--muted)] focus:outline-none data-[focus]:ring-2 data-[focus]:ring-[var(--switch-track-checked)] data-[checked]:border-[var(--text)] data-[checked]:bg-[var(--border)]"
+          className="group cursor-pointer rounded-xl border border-[var(--border)] p-3 transition-colors hover:border-[var(--muted)] focus:outline-none data-[focus]:ring-2 data-[focus]:ring-[var(--switch-track-checked)] data-[checked]:border-[var(--text)] data-[checked]:ring-1 data-[checked]:ring-[var(--text)]"
         >
           <span className="text-2xl" aria-hidden="true">
             {appliance.icon}

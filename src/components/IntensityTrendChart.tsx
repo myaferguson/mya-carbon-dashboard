@@ -18,12 +18,14 @@ import { toPng } from "html-to-image";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { formatClockWithDay } from "../utils/formatTime";
 import {
+  describeTrend,
   formatTick,
   sixHourTicks,
   toIndexBands,
   type IndexBand,
 } from "../utils/chart";
 import { useNow } from "../hooks/useNow";
+import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 
 type IntensityTrendChartProps = {
   periods: HalfHourPeriod[];
@@ -54,7 +56,11 @@ function downloadCsv(periods: HalfHourPeriod[]): void {
 
 export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
   const chartRef = React.useRef<HTMLDivElement>(null);
-  const now: number = useNow().getTime();
+  const nowDate: Date = useNow();
+  const now: number = nowDate.getTime();
+  const reducedMotion: boolean = usePrefersReducedMotion();
+  const [showTable, setShowTable] = React.useState<boolean>(false);
+  const tableId: string = React.useId();
 
   const data: ChartDataPoint[] = periods.map(
     (period: HalfHourPeriod): ChartDataPoint => ({
@@ -142,7 +148,7 @@ export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
         </div>
       </div>
 
-      <div ref={chartRef}>
+      <div ref={chartRef} role="img" aria-label={describeTrend(periods, nowDate)}>
         <ResponsiveContainer width="100%" height={280}>
           <LineChart
             data={data}
@@ -217,6 +223,7 @@ export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
               strokeDasharray="6 3"
               dot={false}
               connectNulls={true}
+              isAnimationActive={!reducedMotion}
             />
             <Line
               type="monotone"
@@ -225,10 +232,57 @@ export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
               strokeWidth={2}
               dot={false}
               connectNulls={false}
+              isAnimationActive={!reducedMotion}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
+
+      <button
+        type="button"
+        aria-expanded={showTable}
+        aria-controls={tableId}
+        onClick={() => setShowTable((v) => !v)}
+        className="mt-4 text-sm text-[var(--muted)] underline underline-offset-2 hover:text-[var(--text)]"
+      >
+        {showTable ? "Hide table" : "View as table"}
+      </button>
+      {showTable && (
+        <div
+          id={tableId}
+          className="mt-3 max-h-72 overflow-y-auto rounded-lg border border-[var(--border)]"
+        >
+          <table className="w-full text-sm">
+            <caption className="sr-only">
+              Half-hourly carbon intensity in gCO₂/kWh
+            </caption>
+            <thead className="sticky top-0 bg-[var(--bg)] text-left text-[var(--muted)]">
+              <tr>
+                <th scope="col" className="px-3 py-2 font-medium">Time</th>
+                <th scope="col" className="px-3 py-2 font-medium text-right">Actual</th>
+                <th scope="col" className="px-3 py-2 font-medium text-right">Forecast</th>
+                <th scope="col" className="px-3 py-2 font-medium">Level</th>
+              </tr>
+            </thead>
+            <tbody>
+              {periods.map((p) => (
+                <tr key={p.from} className="border-t border-[var(--border)]">
+                  <th scope="row" className="px-3 py-1.5 text-left font-normal">
+                    {formatClockWithDay(p.from, nowDate)}
+                  </th>
+                  <td className="px-3 py-1.5 text-right tabular-nums">
+                    {p.actual ?? "–"}
+                  </td>
+                  <td className="px-3 py-1.5 text-right tabular-nums">
+                    {p.forecast}
+                  </td>
+                  <td className="px-3 py-1.5 capitalize">{p.index}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

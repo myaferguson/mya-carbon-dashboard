@@ -18,7 +18,7 @@ export function IndexBadge({
 
   return (
     <span
-      className={`index-badge ${index.replace(" ", "-")} px-2.5 py-1 rounded-full text-xs font-medium capitalize border ${colors[index]}`}
+      className={`index-badge ${index.replace(" ", "-")} shrink-0 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-medium capitalize border ${colors[index]}`}
     >
       {index}
     </span>

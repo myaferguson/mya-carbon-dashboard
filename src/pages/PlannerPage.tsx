@@ -80,16 +80,16 @@ export function PlannerPage() {
 
   return (
     <>
-      <header className="mb-8 sm:mb-10">
+      <div className="mb-8 sm:mb-10">
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
           Appliance planner
         </h1>
         <p className="text-[var(--muted)] text-sm mt-1">
           When's the cleanest time to run it in the next 24 hours?
         </p>
-      </header>
+      </div>
 
-      <main className="space-y-6">
+      <div className="space-y-6">
         <section
           aria-labelledby="planner-inputs-heading"
           className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 sm:p-8 space-y-6"
@@ -201,7 +201,7 @@ export function PlannerPage() {
             now={now}
           />
         )}
-      </main>
+      </div>
     </>
   );
 }

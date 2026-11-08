@@ -29,48 +29,56 @@ export function Layout() {
   return (
     <div className="bg-[var(--bg)] text-[var(--text)] min-h-screen transition-colors duration-200">
       <div className="max-w-3xl mx-auto px-4 sm:px-8 min-h-screen flex flex-col">
-        <div className="flex items-center justify-between pt-4">
-          <nav className="flex gap-1">
-            <TabLink to="/" label="Dashboard" />
-            <TabLink to="/planner" label="Planner" />
-            <TabLink to="/tea" label="Tea optimiser" />
-          </nav>
+        <a
+          href="#content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[var(--text)] focus:px-3 focus:py-2 focus:text-[var(--bg)]"
+        >
+          Skip to content
+        </a>
+        <header>
+          <div className="flex items-center justify-between pt-4">
+            <nav className="flex gap-1">
+              <TabLink to="/" label="Dashboard" />
+              <TabLink to="/planner" label="Planner" />
+              <TabLink to="/tea" label="Tea optimiser" />
+            </nav>
 
-          <Field as="div" className="flex items-center gap-2">
-            <Label className="sr-only sm:not-sr-only text-sm text-[var(--muted)]">
-              {theme === "light" ? "Light mode" : "Dark mode"}
-            </Label>
-            <Switch
-              checked={theme === "dark"}
-              onChange={(): void =>
-                setTheme(
-                  (prev: Theme): Theme => (prev === "light" ? "dark" : "light"),
-                )
-              }
-              className={({ checked }: { checked: boolean }): string =>
-                `relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                  checked
-                    ? "bg-[var(--switch-track-checked)]"
-                    : "bg-[var(--switch-track)]"
-                }`
-              }
-            >
-              <span
-                className={`${
-                  theme === "dark" ? "translate-x-6" : "translate-x-1"
-                } inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200`}
-              />
-            </Switch>
-          </Field>
-        </div>
-        <div className="border-b border-[var(--border)] mt-2" />
-        <LocationBar />
+            <Field as="div" className="flex items-center gap-2">
+              <Label className="sr-only sm:not-sr-only text-sm text-[var(--muted)]">
+                {theme === "light" ? "Light mode" : "Dark mode"}
+              </Label>
+              <Switch
+                checked={theme === "dark"}
+                onChange={(): void =>
+                  setTheme(
+                    (prev: Theme): Theme => (prev === "light" ? "dark" : "light"),
+                  )
+                }
+                className={({ checked }: { checked: boolean }): string =>
+                  `relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                    checked
+                      ? "bg-[var(--switch-track-checked)]"
+                      : "bg-[var(--switch-track)]"
+                  }`
+                }
+              >
+                <span
+                  className={`${
+                    theme === "dark" ? "translate-x-6" : "translate-x-1"
+                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200`}
+                />
+              </Switch>
+            </Field>
+          </div>
+          <div className="border-b border-[var(--border)] mt-2" />
+          <LocationBar />
+        </header>
         {/* flex 1 allows the main content area to grow and fill the available
         vertical space, pushing the footer to the bottom of the page. */}
-        <div className="py-8 sm:py-10 flex-1">
+        <main className="py-8 sm:py-10 flex-1" id="content" tabIndex={-1}>
           {/* render the matched child route component */}
           <Outlet />
-        </div>
+        </main>
         <footer className="pb-10 text-[var(--muted)] text-sm">
           Data from{" "}
           <a

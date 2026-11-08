@@ -73,7 +73,7 @@ export function OptimalBrewCard({
             <span className="text-[var(--muted)]">
               A cup at {formatClockWithDay(cleanestPeriod.from, now)}
             </span>
-            <span className="font-medium" style={{ color: "#4ade80" }}>
+            <span className="font-medium" style={{ color: "var(--good)" }}>
               {co2Optimal.toFixed(1)}g CO₂
             </span>
           </div>
@@ -81,7 +81,7 @@ export function OptimalBrewCard({
         {!isNow && saving > 0 && (
           <div className="flex justify-between text-sm pt-2 border-t border-[var(--border)]">
             <span className="text-[var(--muted)]">You'd save</span>
-            <span className="font-medium" style={{ color: "#86efac" }}>
+            <span className="font-medium" style={{ color: "var(--good)" }}>
               {saving.toFixed(1)}g per cup
             </span>
           </div>

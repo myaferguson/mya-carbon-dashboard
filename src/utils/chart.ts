@@ -1,6 +1,6 @@
 import type { IntensityIndex } from "../types/carbonIntensity";
 import type { HalfHourPeriod } from "../types/dailyIntensity";
-import { formatClock } from "./formatTime";
+import { formatClock, formatClockWithDay } from "./formatTime";
 
 export type IndexBand = {
   index: IntensityIndex;
@@ -42,4 +42,19 @@ export function formatTick(ts: number): string {
   return date.getHours() === 0
     ? date.toLocaleDateString("en-GB", { weekday: "short" })
     : formatClock(date.toISOString());
+}
+
+/** A one-sentence description of the trend, for screen readers. */
+export function describeTrend(periods: HalfHourPeriod[], now: Date): string {
+  if (periods.length === 0) return "No intensity data available.";
+  const value = (p: HalfHourPeriod): number => p.actual ?? p.forecast;
+  const min = periods.reduce((a, b) => (value(b) < value(a) ? b : a));
+  const max = periods.reduce((a, b) => (value(b) > value(a) ? b : a));
+  const at = (p: HalfHourPeriod): string => formatClockWithDay(p.from, now);
+  return (
+    `Line chart of carbon intensity from ${at(periods[0])} to ` +
+    `${formatClockWithDay(periods[periods.length - 1].to, now)}. ` +
+    `Lowest ${value(min)} gCO₂/kWh at ${at(min)}; ` +
+    `highest ${value(max)} gCO₂/kWh at ${at(max)}.`
+  );
 }

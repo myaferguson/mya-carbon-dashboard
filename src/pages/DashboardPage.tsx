@@ -32,7 +32,7 @@ export function DashboardPage() {
 
   return (
     <React.Fragment>
-      <header className="mb-8 sm:mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-8 sm:mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
             UK Carbon Intensity
@@ -43,9 +43,9 @@ export function DashboardPage() {
               : "Real-time carbon emissions from the British electricity grid"}
           </p>
         </div>
-      </header>
+      </div>
 
-      <main className="space-y-6">
+      <div className="space-y-6">
         {areaNotFound && (
           <div
             role="alert"
@@ -107,7 +107,7 @@ export function DashboardPage() {
             areaName={region?.name}
           />
         )}
-      </main>
+      </div>
     </React.Fragment>
   );
 }
