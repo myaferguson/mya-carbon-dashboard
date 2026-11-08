@@ -46,8 +46,9 @@ vi.mock("../src/hooks/useRegions", () => {
 });
 
 describe("App", () => {
-  it("renders the app header", () => {
+  it("renders the app header", async () => {
     render(<App />);
-    expect(screen.getByText("UK Carbon Intensity")).toBeInTheDocument();
+    // Pages load lazily, so wait for the dashboard to arrive.
+    expect(await screen.findByText("UK Carbon Intensity")).toBeInTheDocument();
   });
 });

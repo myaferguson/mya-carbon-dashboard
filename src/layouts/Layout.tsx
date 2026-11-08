@@ -1,8 +1,9 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Field, Label, Switch } from "@headlessui/react";
 import type { Theme } from "../types/types";
 import { LocationBar } from "../components/LocationBar";
+import { CardSkeleton } from "../components/CardSkeleton";
 
 /** Saved theme if there is a valid one, otherwise the system preference. */
 function getInitialTheme(): Theme {
@@ -77,7 +78,9 @@ export function Layout() {
         vertical space, pushing the footer to the bottom of the page. */}
         <main className="py-8 sm:py-10 flex-1" id="content" tabIndex={-1}>
           {/* render the matched child route component */}
-          <Outlet />
+          <Suspense fallback={<CardSkeleton label="Loading page" bodyHeight="h-48" />}>
+            <Outlet />
+          </Suspense>
         </main>
         <footer className="pb-10 text-[var(--muted)] text-sm">
           Data from{" "}
