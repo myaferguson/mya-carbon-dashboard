@@ -3,9 +3,9 @@ import { mockApi } from "./mockApi";
 
 test("fits a phone screen without sideways scrolling", async ({ page }) => {
   await mockApi(page);
-  for (const path of ["/", "/planner", "/tea"]) {
+  for (const path of ["/", "/?appliance=custom", "/?postcode=SW1A"]) {
     await page.goto(path);
-    await expect(page.getByRole("navigation")).toBeVisible();
+    await expect(page.getByTestId("planner-start")).toBeVisible();
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth,
     );

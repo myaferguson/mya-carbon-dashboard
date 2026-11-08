@@ -96,11 +96,17 @@ describe("toAllRegions", () => {
 
 describe("unknown postcodes", () => {
   it("throw a clear error instead of a TypeError", () => {
-    expect(() =>
-      toRegionalPeriods({ data: null } as unknown as Parameters<typeof toRegionalPeriods>[0]),
-    ).toThrow("No regional forecast for this postcode");
+    expect(() => toRegionalPeriods({ data: null })).toThrow(
+      "No regional forecast for this postcode",
+    );
     expect(() => toRegionCurrent({ data: [] })).toThrow(
       "No regional data for this postcode",
     );
+  });
+});
+
+describe("empty responses", () => {
+  it("toAllRegions returns no regions instead of crashing", () => {
+    expect(toAllRegions({ data: [] })).toEqual({ local: [], gb: null });
   });
 });

@@ -1,24 +1,30 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { lazy } from "react";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Layout } from "./layouts/Layout";
-import { lazy } from "react";
 import { LocationProvider } from "./context/LocationProvider";
+import type { ApplianceId } from "./utils/appliances";
 
-// Each page is its own chunk, so visitors only download the code for the
-// page they open. The dashboard's charting library is the biggest saving.
+// Lazy so the shell paints first; the dashboard's chart is split again.
 const DashboardPage = lazy(() =>
   import("./pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
-);
-const PlannerPage = lazy(() =>
-  import("./pages/PlannerPage").then((m) => ({ default: m.PlannerPage })),
-);
-const TeaPage = lazy(() =>
-  import("./pages/TeaPage").then((m) => ({ default: m.TeaPage })),
 );
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1 } },
 });
+
+/**
+ * The planner and tea optimiser used to be separate pages. Old links still
+ * work: they open the dashboard at the planner with the matching appliance,
+ * keeping any other query parameters (postcode, hours, by…).
+ */
+function ToPlanner({ appliance }: { appliance: ApplianceId }) {
+  const { search } = useLocation();
+  const params = new URLSearchParams(search);
+  if (!params.has("appliance")) params.set("appliance", appliance);
+  return <Navigate replace to={{ pathname: "/", search: `?${params}`, hash: "#planner" }} />;
+}
 
 function App() {
   return (
@@ -28,8 +34,9 @@ function App() {
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<DashboardPage />} />
-              <Route path="/planner" element={<PlannerPage />} />
-              <Route path="/tea" element={<TeaPage />} />
+              <Route path="/planner" element={<ToPlanner appliance="washing-machine" />} />
+              <Route path="/tea" element={<ToPlanner appliance="kettle" />} />
+              <Route path="*" element={<Navigate replace to="/" />} />
             </Route>
           </Routes>
         </LocationProvider>

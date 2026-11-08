@@ -20,7 +20,8 @@ export type BestWindow = {
   end: string;
   /** Mean intensity across the window, in gCO₂/kWh. */
   avgIntensity: number;
-  periods: HalfHourPeriod[];
+  /** The half hours in the window; never empty. */
+  periods: [HalfHourPeriod, ...HalfHourPeriod[]];
 };
 
 type FindBestWindowOptions = {
@@ -55,10 +56,14 @@ export function findBestWindow(
 
   for (let i = 0; i + slots <= upcoming.length; i++) {
     const window: HalfHourPeriod[] = upcoming.slice(i, i + slots);
+    const [first, ...rest] = window;
+    const last: HalfHourPeriod | undefined = window.at(-1);
+    if (!first || !last) continue;
 
-    const contiguous: boolean = window.every(
-      (p, j) => j === 0 || time(p.from) === time(window[j - 1].to),
-    );
+    const contiguous: boolean = window.every((p, j) => {
+      const previous: HalfHourPeriod | undefined = window[j - 1];
+      return !previous || time(p.from) === time(previous.to);
+    });
     if (!contiguous) continue;
 
     const avgIntensity: number =
@@ -66,10 +71,10 @@ export function findBestWindow(
 
     if (!best || avgIntensity < best.avgIntensity) {
       best = {
-        start: window[0].from,
-        end: window[slots - 1].to,
+        start: first.from,
+        end: last.to,
         avgIntensity,
-        periods: window,
+        periods: [first, ...rest],
       };
     }
   }
@@ -98,11 +103,12 @@ export function windowStartingNow(
  * period whose value is closest to the window's average.
  */
 export function representativeIndex(window: BestWindow): HalfHourPeriod["index"] {
-  return [...window.periods].sort(
-    (a, b) =>
-      Math.abs(periodIntensity(a) - window.avgIntensity) -
-      Math.abs(periodIntensity(b) - window.avgIntensity),
-  )[0].index;
+  const distance = (p: HalfHourPeriod): number =>
+    Math.abs(periodIntensity(p) - window.avgIntensity);
+  // Ties go to the earlier period.
+  return window.periods.reduce((closest, p) =>
+    distance(p) < distance(closest) ? p : closest,
+  ).index;
 }
 
 export type ForecastSummary =

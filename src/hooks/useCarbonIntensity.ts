@@ -21,6 +21,7 @@ type CarbonIntensityResponse = {
 
 function toCarbonIntensity(json: CarbonIntensityResponse): CarbonIntensity {
   const period = json.data[0];
+  if (!period) throw new Error("No current intensity in the response");
   return {
     from: period.from,
     to: period.to,

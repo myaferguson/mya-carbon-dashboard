@@ -48,6 +48,11 @@ describe("guards", () => {
 });
 
 describe("nextOccurrence", () => {
+  it("treats a malformed time as midnight rather than NaN", () => {
+    const now = new Date(2026, 4, 16, 22, 0);
+    expect(nextOccurrence("", now)).toEqual(new Date(2026, 4, 17, 0, 0));
+  });
+
   it("is later today if the time hasn't passed", () => {
     const now = new Date(2026, 4, 16, 5, 0);
     expect(nextOccurrence("07:00", now)).toEqual(new Date(2026, 4, 16, 7, 0));

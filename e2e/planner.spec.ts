@@ -5,6 +5,23 @@ test.beforeEach(async ({ page }) => {
   await mockApi(page);
 });
 
+test("old /tea links open the planner with the kettle", async ({ page }) => {
+  await page.goto("/tea?postcode=SW1A");
+  await expect(page).toHaveURL(/\/\?postcode=SW1A&appliance=kettle#planner$/);
+  await expect(page.getByRole("radio", { name: /Kettle/ })).toBeChecked();
+  await expect(page.getByTestId("kettle-note")).toContainText("phone charges");
+});
+
+test("highlights the recommended window on the chart", async ({ page }) => {
+  await page.goto("/?appliance=ev");
+  await expect(page.getByTestId("planner-start")).toHaveText("Start at 02:00");
+  // Recharts draws the outlined area and its label in separate layers.
+  await expect(
+    page.locator('.recharts-reference-area path[stroke-dasharray="4 3"]'),
+  ).toHaveCount(1);
+  await expect(page.locator(".recharts-wrapper text", { hasText: "Best time" })).toBeVisible();
+});
+
 test("plans an EV charge and keeps the plan in the URL", async ({ page }) => {
   await page.goto("/planner");
   await page.getByRole("radio", { name: /EV charge/ }).click();

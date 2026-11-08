@@ -82,7 +82,8 @@ function respond(path: string): { status: number; body: unknown } {
   }
 
   if ((m = path.match(/^\/intensity\/([^/]+)\/([^/]+)$/))) {
-    const periods = halfHours(new Date(m[1]), new Date(m[2])).map((t) => {
+    const [, from = "", to = ""] = m;
+    const periods = halfHours(new Date(from), new Date(to)).map((t) => {
       const { forecast, index } = nationalValue(t);
       const finished = t.getTime() + HALF_HOUR <= NOW.getTime();
       return {
@@ -145,8 +146,9 @@ function respond(path: string): { status: number; body: unknown } {
   }
 
   if ((m = path.match(/^\/regional\/intensity\/([^/]+)\/fw48h\/postcode\/([^/]+)$/))) {
-    if (m[2] !== "SW1A") return { status: 200, body: { data: null } };
-    const from = new Date(m[1]);
+    const [, start = "", outcode = ""] = m;
+    if (outcode !== "SW1A") return { status: 200, body: { data: null } };
+    const from = new Date(start);
     const periods = halfHours(from, new Date(from.getTime() + 96 * HALF_HOUR)).map((t) => ({
       from: iso(t),
       to: iso(new Date(t.getTime() + HALF_HOUR)),
