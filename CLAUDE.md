@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-UK carbon intensity dashboard, appliance planner and "tea optimiser": React 19 + TypeScript + Vite + Tailwind v4, with data from the public National Grid ESO Carbon Intensity API (`https://api.carbonintensity.org.uk`, no key). It deploys to Vercel automatically from `main`.
+A single-page UK carbon intensity dashboard with an appliance planner: React 19 + TypeScript + Vite + Tailwind v4, with data from the public National Grid ESO Carbon Intensity API (`https://api.carbonintensity.org.uk`, no key). It deploys to Vercel automatically from `main`.
 
 ## Commands
 
@@ -50,16 +50,25 @@ Strict mode is on in both tsconfigs (`strict`, `noUncheckedIndexedAccess`, `noIm
 - **The API only accepts the outward code** (`SW1A`, not `SW1A 1AA`). `toOutcode()` in `utils/postcode.ts` normalises input.
 - **Unknown postcodes fail in two ways:** a 400 with no CORS header (the browser reports a CORS error), or a 200 with `data: null` (the transforms throw a clear error). `DashboardPage` collapses these into one "We couldn't find data for X" alert.
 
+### Page layout
+- **Everything is on one page** (`src/pages/DashboardPage.tsx`), max width `max-w-6xl`. On `lg` and up there are three rows: summary tiles (`SummaryTiles.tsx`); the chart (7 columns) beside `PlannerCard` (5 columns); `FuelMixCard` beside `RegionComparisonCard` (2/3 of a 5-column grid).
+- `PlannerCard` comes **before** the chart in the DOM, so mobile and screen readers get it first. Desktop positions it with `lg:col-start-*`/`lg:row-start-1`. Don't use CSS `order`, because the reading order must match the visual order.
+- **Routes:** `/planner` and `/tea` used to be pages. They now `<Navigate>` to `/?appliance=…#planner`, keeping existing query params. Any other path redirects to `/`.
+- **Panels:** new ones use the compact `Card` component. Theme tokens are listed under "Styling and theme" below.
+
 ### Planner and time logic (`src/utils/planner.ts`)
 - **`findBestWindow(periods, slots, { now, deadline })`** is a sliding window over consecutive, not-yet-finished half hours.
   - Gaps in the data break a window. Ties go to the earliest window. `actual ?? forecast` is preferred.
-  - It powers the dashboard summary (`summariseForecast`), the Tea page's best brew time and `/planner`.
-- **Planner state lives entirely in the URL**: `appliance`, `hours`, `kwh`, `by`, read and written with `useSearchParams` functional updates. That keeps it compatible with `LocationProvider`'s `postcode` param. Presets and parsing are in `utils/appliances.ts`.
+  - It powers the summary tiles (`summariseForecast`, the cleanest-time tile) and the planner.
+- **Planner state lives entirely in the URL**: `appliance` (default `kettle`), `hours`, `kwh`, `by`.
+  - `usePlannerState` reads and writes it with `useSearchParams` functional updates, so it doesn't clobber `LocationProvider`'s `postcode` param.
+  - `DashboardPage` computes the best window once and passes it to both `PlannerCard` and `IntensityTrendChart` (`highlight` prop). The chart outlines it with a dashed `ReferenceArea`.
+  - Presets and parsing are in `utils/appliances.ts`. Chips show `shortLabel`; the accessible name is the full `label`.
 - **Time in render:** `react-hooks/purity` lint forbids `Date.now()` in render. Use `useNow()`, which ticks every minute, and pass `now` into pure functions.
 - **Times are shown in the visitor's local timezone** via `en-GB` formatting (`utils/formatTime.ts`: `formatClock`, `formatClockWithDay`, `dayLabel`). API timestamps are minute-precision UTC: `toApiTime()` gives `2026-11-08T22:30Z`.
 
 ### Code splitting
-Pages are `React.lazy` in `App.tsx`, inside a `Suspense` in `Layout`. On the Dashboard, `IntensityTrendChart` and `GenerationMixChart` are lazy as well, because Recharts is the largest dependency. Keep Recharts out of anything imported by the Planner or Tea pages.
+`DashboardPage` is `React.lazy` in `App.tsx`, inside a `Suspense` in `Layout`. `IntensityTrendChart` is lazy inside it and is the **only** user of Recharts, its largest dependency. The fuel-mix and region bars are plain HTML; keep them that way so the tiles and planner don't wait for Recharts.
 
 ### Styling and theme
 - Tailwind v4, with colours from CSS variables in `src/index.css`. Light mode is the `.theme-light` class on `<html>`, toggled in `Layout`.
@@ -68,7 +77,7 @@ Pages are `React.lazy` in `App.tsx`, inside a `Suspense` in `Layout`. On the Das
 
 ## Testing conventions
 
-- **Component and page tests** mock the data hooks by module path, e.g. `vi.mock("../src/hooks/useIntensityForecast", …)`. Anything that renders `App` must mock every data hook it reaches. `App.test` uses `findBy*` because pages are lazy.
+- **Component and page tests** mock the data hooks by module path, e.g. `vi.mock("../src/hooks/useIntensityForecast", …)`. Anything that renders `App` must mock every data hook it reaches. `App.test` uses `findBy*` because pages are lazy. `DashboardPage.test` also mocks `IntensityTrendChart` with a stub that renders the `highlight` it receives.
 - **Tests that call `useApiData` for real** (hook and provider tests) need the wrapper from `tests/support/queryWrapper.tsx`. Components that use `Link` or `useSearchParams` need a `MemoryRouter`.
 - **Time-dependent tests** use `vi.useFakeTimers({ toFake: ["Date"] })` + `vi.setSystemTime(...)`, so only `Date` is faked and Testing Library's `waitFor` still works. Build timestamps from local times (`new Date(y, m, d, h, min).toISOString()`) so the tests pass in any timezone.
 - **E2E** (`e2e/`): `mockApi(page)` in `e2e/mockApi.ts` freezes the clock at `NOW` (16 May 2026, 21:10 London) and answers every API path with fixtures.
