@@ -2,6 +2,8 @@ import { useId } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AppliancePicker } from "../components/AppliancePicker";
 import { PlannerResult } from "../components/PlannerResult";
+import { CardSkeleton } from "../components/CardSkeleton";
+import { ErrorCard } from "../components/ErrorCard";
 import { useLocationContext } from "../context/locationContext";
 import { useIntensityForecast } from "../hooks/useIntensityForecast";
 import { useNow } from "../hooks/useNow";
@@ -182,9 +184,11 @@ export function PlannerPage() {
         </section>
 
         {forecast.loading && (
-          <p className="text-[var(--muted)]">Loading the forecast…</p>
+          <CardSkeleton label="Loading the forecast" bodyHeight="h-48" />
         )}
-        {forecast.error && <p className="text-red-400">{forecast.error}</p>}
+        {forecast.error && (
+          <ErrorCard message={forecast.error} onRetry={forecast.refetch} />
+        )}
         {forecast.data && (
           <PlannerResult
             appliance={resolved}

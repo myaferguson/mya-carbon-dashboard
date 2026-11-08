@@ -9,6 +9,8 @@ import {
   type UseIntensityForecastResult,
 } from "../hooks/useIntensityForecast";
 import { OptimalBrewCard } from "../components/OptimalBrewCard";
+import { CardSkeleton } from "../components/CardSkeleton";
+import { ErrorCard } from "../components/ErrorCard";
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -67,7 +69,7 @@ const HERO_CONFIG: Record<IntensityIndex, HeroConfig> = {
 };
 
 export function TeaPage() {
-  const { data, loading, error }: UseCarbonIntensityResult =
+  const { data, loading, error, refetch }: UseCarbonIntensityResult =
     useCarbonIntensity();
   const forecast: UseIntensityForecastResult = useIntensityForecast();
 
@@ -83,20 +85,21 @@ export function TeaPage() {
       </header>
 
       <main className="space-y-6">
-        {loading && <p className="text-[var(--muted)]">Checking the grid…</p>}
-        {error && <p className="text-red-400">{error}</p>}
+        {loading && <CardSkeleton label="Checking the grid" bodyHeight="h-32" />}
+        {error && <ErrorCard message={error} onRetry={refetch} />}
         {data && (
           <React.Fragment>
             <HeroCard index={data.index} />
             <TeaCupCard data={data} />
 
             {forecast.loading && (
-              <p className="text-[var(--muted)]">
-                Finding the best time to brew…
-              </p>
+              <CardSkeleton
+                label="Finding the best time to brew"
+                bodyHeight="h-24"
+              />
             )}
             {forecast.error && (
-              <p className="text-red-400">{forecast.error}</p>
+              <ErrorCard message={forecast.error} onRetry={forecast.refetch} />
             )}
             {forecast.data && (
               <OptimalBrewCard

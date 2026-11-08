@@ -18,6 +18,8 @@ import { ForecastSummaryCard } from "../components/ForecastSummaryCard";
 import { RegionComparisonCard } from "../components/RegionComparisonCard";
 import { useRegions } from "../hooks/useRegions";
 import { useLocationContext } from "../context/locationContext";
+import { CardSkeleton } from "../components/CardSkeleton";
+import { ErrorCard } from "../components/ErrorCard";
 
 export function DashboardPage() {
   const intensity: UseCarbonIntensityResult = useCarbonIntensity();
@@ -64,9 +66,11 @@ export function DashboardPage() {
           </div>
         )}
         {intensity.loading && (
-          <p className="text-zinc-400">Loading current intensity…</p>
+          <CardSkeleton label="Loading current intensity" bodyHeight="h-20" />
         )}
-        {intensity.error && !areaNotFound && <p className="text-red-400">{intensity.error}</p>}
+        {intensity.error && !areaNotFound && (
+          <ErrorCard message={intensity.error} onRetry={intensity.refetch} />
+        )}
         {intensity.data && forecast.data && (
           <ForecastSummaryCard
             current={intensity.data}
@@ -76,18 +80,27 @@ export function DashboardPage() {
         {intensity.data && <CurrentIntensityCard data={intensity.data} />}
 
         {forecast.loading && (
-          <p className="text-[var(--muted)]">Loading trend data…</p>
+          <CardSkeleton label="Loading the forecast" bodyHeight="h-64" />
         )}
-        {forecast.error && !areaNotFound && <p className="text-red-400">{forecast.error}</p>}
+        {forecast.error && !areaNotFound && (
+          <ErrorCard message={forecast.error} onRetry={forecast.refetch} />
+        )}
         {forecast.data && <IntensityTrendChart periods={forecast.data} />}
 
-        {regions.error && <p className="text-red-400">{regions.error}</p>}
+        {regions.loading && (
+          <CardSkeleton label="Loading regions" bodyHeight="h-72" />
+        )}
+        {regions.error && (
+          <ErrorCard message={regions.error} onRetry={regions.refetch} />
+        )}
         {regions.data && <RegionComparisonCard regions={regions.data} />}
 
         {generation.loading && (
-          <p className="text-zinc-400">Loading generation mix…</p>
+          <CardSkeleton label="Loading the fuel mix" bodyHeight="h-72" />
         )}
-        {generation.error && !areaNotFound && <p className="text-red-400">{generation.error}</p>}
+        {generation.error && !areaNotFound && (
+          <ErrorCard message={generation.error} onRetry={generation.refetch} />
+        )}
         {generation.data && (
           <GenerationMixChart
             sources={generation.data.sources}
