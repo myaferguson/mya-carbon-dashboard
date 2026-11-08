@@ -89,6 +89,14 @@ export function TeaPage() {
             <HeroCard index={data.index} />
             <TeaCupCard data={data} />
 
+            {dailyIntensity.loading && (
+              <p className="text-[var(--muted)]">
+                Finding the best time to brew…
+              </p>
+            )}
+            {dailyIntensity.error && (
+              <p className="text-red-400">{dailyIntensity.error}</p>
+            )}
             {dailyIntensity.data && (
               <OptimalBrewCard
                 periods={dailyIntensity.data}

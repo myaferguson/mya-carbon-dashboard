@@ -14,17 +14,11 @@ import type {
 import React from "react";
 import { toPng } from "html-to-image";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { formatClock } from "../utils/formatTime";
 
 type DailyTrendChartProps = {
   periods: HalfHourPeriod[];
 };
-
-function formatTime(isoString: string): string {
-  return new Date(isoString).toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 function downloadCsv(periods: HalfHourPeriod[]): void {
   const header: string = "From,To,Actual (gCO₂/kWh),Forecast (gCO₂/kWh),Index";
@@ -52,7 +46,7 @@ export function DailyTrendChart({ periods }: DailyTrendChartProps) {
 
   const data: ChartDataPoint[] = periods.map(
     (period: HalfHourPeriod): ChartDataPoint => ({
-      time: formatTime(period.from),
+      time: formatClock(period.from),
       actual: period.actual,
       forecast: period.forecast,
     }),

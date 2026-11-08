@@ -1,58 +1,38 @@
-import { useEffect, useState } from "react";
-import type { CarbonIntensity } from "../types/carbonIntensity";
+import type {
+  CarbonIntensity,
+  IntensityIndex,
+} from "../types/carbonIntensity";
+import { useApiData, type ApiDataResult } from "./useApiData";
 
-export type UseCarbonIntensityResult = {
-  data: CarbonIntensity | null;
-  loading: boolean;
-  error: string | null;
+export type UseCarbonIntensityResult = ApiDataResult<CarbonIntensity>;
+
+type CarbonIntensityResponse = {
+  data: {
+    from: string;
+    to: string;
+    intensity: {
+      forecast: number;
+      actual: number | null;
+      index: IntensityIndex;
+    };
+  }[];
+};
+
+function toCarbonIntensity(json: CarbonIntensityResponse): CarbonIntensity {
+  const period = json.data[0];
+  return {
+    from: period.from,
+    to: period.to,
+    forecast: period.intensity.forecast,
+    actual: period.intensity.actual,
+    index: period.intensity.index,
+  };
 }
 
 export function useCarbonIntensity(): UseCarbonIntensityResult {
-  const [data, setData] = useState<CarbonIntensity | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchData() {
-      try {
-        const response = await fetch(
-          "https://api.carbonintensity.org.uk/intensity",
-        );
-        if (!response.ok) {
-          throw new Error(
-            `API returned ${response.status}: ${response.statusText}`,
-          );
-        }
-        const json = await response.json();
-        const period = json.data[0];
-
-        if (cancelled) return;
-
-        setData({
-          from: period.from,
-          to: period.to,
-          forecast: period.intensity.forecast,
-          actual: period.intensity.actual,
-          index: period.intensity.index,
-        });
-      } catch (err) {
-        if (cancelled) return;
-        console.error("Failed to fetch carbon intensity:", err);
-        setError((err as Error).message);
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    fetchData();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return { data, loading, error };
+  return useApiData(
+    "https://api.carbonintensity.org.uk/intensity",
+    toCarbonIntensity,
+    "Could not load current intensity data.",
+  );
 }
