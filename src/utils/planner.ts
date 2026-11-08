@@ -77,6 +77,34 @@ export function findBestWindow(
   return best;
 }
 
+/**
+ * The window you'd get by starting right now: the current half hour and
+ * the ones straight after it. Null if the data doesn't cover it.
+ */
+export function windowStartingNow(
+  periods: HalfHourPeriod[],
+  slots: number,
+  now: Date = new Date(),
+): BestWindow | null {
+  const upcoming = periods
+    .filter((p) => time(p.to) > now.getTime())
+    .sort((a, b) => time(a.from) - time(b.from));
+  // Only the first window is a candidate, so search just that slice.
+  return findBestWindow(upcoming.slice(0, slots), slots, { now });
+}
+
+/**
+ * The intensity index that best represents a window: the index of the
+ * period whose value is closest to the window's average.
+ */
+export function representativeIndex(window: BestWindow): HalfHourPeriod["index"] {
+  return [...window.periods].sort(
+    (a, b) =>
+      Math.abs(periodIntensity(a) - window.avgIntensity) -
+      Math.abs(periodIntensity(b) - window.avgIntensity),
+  )[0].index;
+}
+
 export type ForecastSummary =
   | { kind: "best-now" }
   | { kind: "flat" }

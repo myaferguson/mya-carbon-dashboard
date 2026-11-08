@@ -10,6 +10,7 @@ import {
 } from "../hooks/useIntensityForecast";
 import { OptimalBrewCard } from "../components/OptimalBrewCard";
 import React from "react";
+import { Link } from "react-router-dom";
 
 type HeroConfig = {
   emoji: string;
@@ -103,6 +104,15 @@ export function TeaPage() {
                 currentIntensity={data.actual ?? data.forecast}
               />
             )}
+            <p className="text-sm text-[var(--muted)]">
+              Planning a bigger load?{" "}
+              <Link
+                to="/planner"
+                className="text-[var(--text)] underline underline-offset-2"
+              >
+                Try the appliance planner →
+              </Link>
+            </p>
           </React.Fragment>
         )}
       </main>

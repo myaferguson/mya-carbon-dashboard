@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import { TeaPage } from "../src/pages/TeaPage";
 
 vi.mock("../src/hooks/useCarbonIntensity", () => ({
@@ -26,7 +27,11 @@ vi.mock("../src/hooks/useIntensityForecast", () => ({
 
 describe("TeaPage", () => {
   it("shows an error when the forecast fails to load", () => {
-    render(<TeaPage />);
+    render(
+      <MemoryRouter>
+        <TeaPage />
+      </MemoryRouter>,
+    );
 
     expect(
       screen.getByText("Could not load the intensity forecast."),

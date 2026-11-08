@@ -32,11 +32,12 @@ export function Layout() {
         <div className="flex items-center justify-between pt-4">
           <nav className="flex gap-1">
             <TabLink to="/" label="Dashboard" />
+            <TabLink to="/planner" label="Planner" />
             <TabLink to="/tea" label="Tea optimiser" />
           </nav>
 
           <Field as="div" className="flex items-center gap-2">
-            <Label className="text-sm text-[var(--muted)]">
+            <Label className="sr-only sm:not-sr-only text-sm text-[var(--muted)]">
               {theme === "light" ? "Light mode" : "Dark mode"}
             </Label>
             <Switch
@@ -92,7 +93,7 @@ function TabLink({ to, label }: { to: string; label: string }) {
       to={to}
       end
       className={({ isActive }: { isActive: boolean }) =>
-        `px-4 py-2.5 text-sm font-medium transition-colors ${
+        `px-3 sm:px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
           isActive
             ? "text-[var(--text)] border-b-2 border-[var(--text)] -mb-px"
             : "text-[var(--muted)] hover:text-[var(--text)]"

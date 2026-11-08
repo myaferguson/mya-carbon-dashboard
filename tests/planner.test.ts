@@ -3,7 +3,9 @@ import type { HalfHourPeriod } from "../src/types/dailyIntensity";
 import {
   co2PerCup,
   findBestWindow,
+  representativeIndex,
   summariseForecast,
+  windowStartingNow,
 } from "../src/utils/planner";
 
 const HALF_HOUR = 30 * 60 * 1000;
@@ -103,5 +105,30 @@ describe("co2PerCup", () => {
   it("multiplies intensity by 0.075 kWh per cup", () => {
     expect(co2PerCup(200)).toBeCloseTo(15);
     expect(co2PerCup(0)).toBe(0);
+  });
+});
+
+describe("windowStartingNow", () => {
+  const periods = day([300, 100, 50, 200]);
+
+  it("takes the current half hour and the ones right after it", () => {
+    const w = windowStartingNow(periods, 2, at("00:10"));
+    expect(w?.start).toBe("2026-05-16T00:00:00.000Z");
+    expect(w?.avgIntensity).toBe(200);
+  });
+
+  it("returns null when the data runs out", () => {
+    expect(windowStartingNow(periods, 3, at("01:10"))).toBeNull();
+  });
+});
+
+describe("representativeIndex", () => {
+  it("uses the index of the period closest to the average", () => {
+    const periods = day([100, 200, 300]);
+    periods[0].index = "low";
+    periods[1].index = "moderate";
+    periods[2].index = "high";
+    const w = findBestWindow(periods, 3, { now: at("00:00") });
+    expect(w && representativeIndex(w)).toBe("moderate");
   });
 });
