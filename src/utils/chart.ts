@@ -46,14 +46,16 @@ export function formatTick(ts: number): string {
 
 /** A one-sentence description of the trend, for screen readers. */
 export function describeTrend(periods: HalfHourPeriod[], now: Date): string {
-  if (periods.length === 0) return "No intensity data available.";
+  const first: HalfHourPeriod | undefined = periods[0];
+  const last: HalfHourPeriod | undefined = periods.at(-1);
+  if (!first || !last) return "No intensity data available.";
   const value = (p: HalfHourPeriod): number => p.actual ?? p.forecast;
   const min = periods.reduce((a, b) => (value(b) < value(a) ? b : a));
   const max = periods.reduce((a, b) => (value(b) > value(a) ? b : a));
   const at = (p: HalfHourPeriod): string => formatClockWithDay(p.from, now);
   return (
-    `Line chart of carbon intensity from ${at(periods[0])} to ` +
-    `${formatClockWithDay(periods[periods.length - 1].to, now)}. ` +
+    `Line chart of carbon intensity from ${at(first)} to ` +
+    `${formatClockWithDay(last.to, now)}. ` +
     `Lowest ${value(min)} gCO₂/kWh at ${at(min)}; ` +
     `highest ${value(max)} gCO₂/kWh at ${at(max)}.`
   );

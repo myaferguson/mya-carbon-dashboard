@@ -51,7 +51,6 @@ export function resolveAppliance(
   id: ApplianceId,
   options: { hours?: number; kwh?: number } = {},
 ): ResolvedAppliance {
-  const preset = APPLIANCES.find((a) => a.id === id) ?? APPLIANCES[0];
 
   if (id === "ev") {
     const hours = clamp(options.hours ?? EV_HOURS.default, EV_HOURS.min, EV_HOURS.max);
@@ -62,6 +61,8 @@ export function resolveAppliance(
     const kwh = clamp(options.kwh ?? CUSTOM_DEFAULTS.kwh, 0.01, 200);
     return { id, label: "Your appliance", kwh, slots: hoursToSlots(hours) };
   }
+  const preset: AppliancePreset | undefined = APPLIANCES.find((a) => a.id === id);
+  if (!preset) throw new Error(`Unknown appliance: ${id}`);
   return { id, label: preset.label, kwh: preset.kwh, slots: preset.slots };
 }
 
@@ -79,7 +80,7 @@ export function isFinishBy(value: string | null): value is FinishBy {
 
 /** The next time the clock reads `hhmm` (local time), strictly after `now`. */
 export function nextOccurrence(hhmm: string, now: Date): Date {
-  const [h, m] = hhmm.split(":").map(Number);
+  const [h = 0, m = 0] = hhmm.split(":").map(Number);
   const next = new Date(now);
   next.setHours(h, m, 0, 0);
   if (next.getTime() <= now.getTime()) next.setDate(next.getDate() + 1);

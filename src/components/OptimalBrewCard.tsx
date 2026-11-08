@@ -32,7 +32,7 @@ export function OptimalBrewCard({
   // No forecast data ahead to compare against.
   if (!best) return null;
 
-  const cleanestPeriod: HalfHourPeriod = best.periods[0];
+  const [cleanestPeriod] = best.periods;
   const isNow: boolean = new Date(cleanestPeriod.from) <= now;
   const cleanestIntensity: number = best.avgIntensity;
   const co2Now: number = co2PerCup(currentIntensity);

@@ -103,4 +103,13 @@ describe("useCarbonIntensity", () => {
     expect(result.current.data).toBeNull();
     expect(result.current.error).toBe("Could not load current intensity data.");
   });
+
+  it("reports an error when the API returns no periods", async () => {
+    mockFetch({ ok: true, json: () => Promise.resolve({ data: [] }) });
+
+    const { result } = renderHook(() => useCarbonIntensity(), { wrapper: createQueryWrapper() });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toBe("Could not load current intensity data.");
+  });
 });

@@ -68,4 +68,20 @@ describe("RegionComparisonCard", () => {
     expect(current).toHaveTextContent("London");
     expect(screen.queryByLabelText("Your postcode")).not.toBeInTheDocument();
   });
+
+  it("renders nothing when there are no regions", () => {
+    const ctx: LocationContextValue = {
+      outcode: null,
+      setOutcode: () => {},
+      region: null,
+      regionLoading: false,
+      regionError: null,
+    };
+    const { container } = render(
+      <LocationContext.Provider value={ctx}>
+        <RegionComparisonCard regions={{ local: [], gb: null }} />
+      </LocationContext.Provider>,
+    );
+    expect(container).toBeEmptyDOMElement();
+  });
 });

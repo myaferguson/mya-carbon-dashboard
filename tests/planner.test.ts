@@ -70,10 +70,11 @@ describe("findBestWindow", () => {
   });
 
   it("prefers the actual value over the forecast", () => {
-    const withActual = day([200, 120]);
-    withActual[0].actual = 100;
+    const withActual = day([200, 120]).map((p, i) =>
+      i === 0 ? { ...p, actual: 100 } : p,
+    );
     const best = findBestWindow(withActual, 1, { now: at("00:00") });
-    expect(best?.start).toBe(withActual[0].from);
+    expect(best?.start).toBe(withActual[0]?.from);
     expect(best?.avgIntensity).toBe(100);
   });
 });
@@ -124,10 +125,11 @@ describe("windowStartingNow", () => {
 
 describe("representativeIndex", () => {
   it("uses the index of the period closest to the average", () => {
-    const periods = day([100, 200, 300]);
-    periods[0].index = "low";
-    periods[1].index = "moderate";
-    periods[2].index = "high";
+    const levels = ["low", "moderate", "high"] as const;
+    const periods = day([100, 200, 300]).map((p, i) => ({
+      ...p,
+      index: levels[i] ?? p.index,
+    }));
     const w = findBestWindow(periods, 3, { now: at("00:00") });
     expect(w && representativeIndex(w)).toBe("moderate");
   });

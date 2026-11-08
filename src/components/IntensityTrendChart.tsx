@@ -69,10 +69,10 @@ export function IntensityTrendChart({ periods }: IntensityTrendChartProps) {
       forecast: period.forecast,
     }),
   );
-  const start: number = periods.length ? time(periods[0].from) : now;
-  const end: number = periods.length
-    ? time(periods[periods.length - 1].to)
-    : now;
+  const firstPeriod: HalfHourPeriod | undefined = periods[0];
+  const lastPeriod: HalfHourPeriod | undefined = periods.at(-1);
+  const start: number = firstPeriod ? time(firstPeriod.from) : now;
+  const end: number = lastPeriod ? time(lastPeriod.to) : now;
   const bands: IndexBand[] = toIndexBands(periods);
   // Regional data is forecast-only, so there's no "last 24h" to show.
   const hasActuals: boolean = periods.some((p) => p.actual !== null);

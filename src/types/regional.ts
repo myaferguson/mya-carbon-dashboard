@@ -21,9 +21,12 @@ export type RegionalPostcodeResponse = {
   data: (RegionResponse & { data: RegionalPeriodResponse[] })[];
 };
 
-/** Response from /regional/intensity/{from}/fw48h/postcode/{outcode}. */
+/**
+ * Response from /regional/intensity/{from}/fw48h/postcode/{outcode}.
+ * Unknown postcodes come back as 200 with `data: null`.
+ */
 export type RegionalForecastResponse = {
-  data: RegionResponse & { data: RegionalPeriodResponse[] };
+  data: (RegionResponse & { data: RegionalPeriodResponse[] }) | null;
 };
 
 /** Response from /regional: every region for the current half hour. */

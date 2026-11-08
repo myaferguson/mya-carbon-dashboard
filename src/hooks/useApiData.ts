@@ -43,13 +43,17 @@ export function useApiData<TJson, TData>(
     queryKey: ["api", url],
     enabled: url !== null,
     queryFn: async (): Promise<TData> => {
+      // Never true: the query is disabled when there's no url.
+      if (url === null) throw new Error("useApiData ran without a url");
       try {
-        const response = await fetch(url as string);
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error(
             `API returned ${response.status}: ${response.statusText}`,
           );
         }
+        // The trust boundary: response.json() is untyped. Each transform
+        // guards against the shapes the API is known to return instead.
         return transform((await response.json()) as TJson);
       } catch (err) {
         console.error(`Failed to fetch ${url}:`, err);

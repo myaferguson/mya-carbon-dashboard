@@ -27,7 +27,13 @@ export function TimelineStrip({ periods, window, deadline, now }: TimelineStripP
   const pastDeadline = (p: HalfHourPeriod): boolean =>
     deadline !== undefined && new Date(p.to).getTime() > deadline.getTime();
 
-  const labelIndexes = [0, 12, 24, 36].filter((i) => i < periods.length);
+  // A label every 6 hours, for the periods that exist.
+  const labels: { index: number; from: string }[] = [0, 12, 24, 36].flatMap(
+    (index) => {
+      const period: HalfHourPeriod | undefined = periods[index];
+      return period ? [{ index, from: period.from }] : [];
+    },
+  );
   const description = window
     ? `Next ${periods.length / 2} hours, coloured by intensity. Recommended window: ${formatClockWithDay(window.start, now)} to ${formatClockWithDay(window.end, now)}.`
     : `Next ${periods.length / 2} hours, coloured by intensity.`;
@@ -73,13 +79,13 @@ export function TimelineStrip({ periods, window, deadline, now }: TimelineStripP
         )}
       </svg>
       <div className="relative mt-1 h-4 text-xs text-[var(--muted)]" aria-hidden="true">
-        {labelIndexes.map((i) => (
+        {labels.map(({ index, from }) => (
           <span
-            key={i}
+            key={index}
             className="absolute -translate-x-0 whitespace-nowrap"
-            style={{ left: `${(i / periods.length) * 100}%` }}
+            style={{ left: `${(index / periods.length) * 100}%` }}
           >
-            {i === 0 ? "Now" : formatClock(periods[i].from)}
+            {index === 0 ? "Now" : formatClock(from)}
           </span>
         ))}
       </div>

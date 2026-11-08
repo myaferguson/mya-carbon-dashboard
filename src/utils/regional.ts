@@ -57,7 +57,7 @@ export function toRegionalPeriods(
   json: RegionalForecastResponse,
 ): HalfHourPeriod[] {
   // Unknown postcodes come back as 200 with `data: null`.
-  if (!json.data?.data) throw new Error("No regional forecast for this postcode");
+  if (!json.data) throw new Error("No regional forecast for this postcode");
   return json.data.data.map((period) => ({
     from: period.from,
     to: period.to,
@@ -77,7 +77,9 @@ export type AllRegions = {
 };
 
 export function toAllRegions(json: AllRegionsResponse): AllRegions {
-  const snapshots: RegionSnapshot[] = json.data[0].regions.map((r) => ({
+  const latest = json.data[0];
+  if (!latest) return { local: [], gb: null };
+  const snapshots: RegionSnapshot[] = latest.regions.map((r) => ({
     id: r.regionid,
     name: r.shortname,
     forecast: r.intensity.forecast,

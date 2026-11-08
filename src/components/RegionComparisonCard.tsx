@@ -22,10 +22,11 @@ function compareWithGb(value: number, gb: number): string {
 export function RegionComparisonCard({ regions }: RegionComparisonCardProps) {
   const { outcode, setOutcode, region, regionError } = useLocationContext();
   const { local, gb } = regions;
-  if (local.length === 0) return null;
+  // The list is sorted cleanest first.
+  const cleanest: RegionSnapshot | undefined = local[0];
+  const dirtiest: RegionSnapshot | undefined = local.at(-1);
+  if (!cleanest || !dirtiest) return null;
 
-  const cleanest = local[0];
-  const dirtiest = local[local.length - 1];
   const max = Math.max(dirtiest.forecast, 1);
   const yours = region ? local.find((r) => r.id === region.id) : undefined;
 
